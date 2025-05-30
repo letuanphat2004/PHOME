@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:margin-left="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng trọ sinh viên</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.js"
+            integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+</head>
+<style>
+    * {
+        margin: 0px;
+        padding: 0px;
+    }
+
+    hr {
+        margin-left: auto;
+        margin-right: auto;
+        width: 90%;
+        border-width: 1px;
+    }
+
+    a{
+        text-decoration: none !important;
+    }
+
+    .left {
+        background-color: white;
+        border: 1px solid;
+        width: 70%;
+        height: 100%;
+        margin-bottom: 20px;
+    }
+
+    .right {
+        /* background-color: white; */
+        /* border: 1px solid; */
+        width: 28%;
+        height: 100%;
+    }
+
+    .web.icon {
+        margin-left: 150px;
+    }
+
+    .content {
+        display: flex;
+        justify-content: space-evenly;
+        flex-wrap: wrap;
+    }
+
+
+    .flex {
+        display: flex;
+        align-items: center;
+    }
+
+    .header {
+        justify-content: space-between;
+    }
+
+
+    .rightheader div {
+        padding: 10px;
+    }
+
+
+    .container {
+        width: 80%;
+        align-items: center;
+        margin: 0 auto;
+    }
+
+
+
+    body {
+        justify-content: center;
+        position: relative;
+        align-items: center;
+        background: #ffffff;
+
+    }
+
+    .border {
+        border: 0.5px solid gray;
+        border-radius: 7px;
+    }
+
+
+    .border bottom {
+        border: 0.5px solid gray;
+        border-radius: 0 0 7px 7px;
+    }
+
+    nav {
+        background-color: #020101;
+    }
+
+    nav ul.menu {
+        display: flex;
+        overflow: hidden;
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+
+    }
+
+    nav ul.menu>li>a {
+
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 17px;
+    }
+
+    nav ul.menu>li:hover a {
+        border-bottom: 5px solid lightblue;
+        transition: all 0.1s;
+    }
+
+    nav ul.menu>li>a.active {
+        border-bottom: 5px solid lightblue;
+    }
+
+    @media screen and (max-width: 873px) {
+        .menu {
+            flex-direction: column;
+        }
+
+        .container{
+            width: 95%;
+        }
+
+        .content {
+            display: block;
+        }
+
+        .right {
+            width: 100%;
+        }
+
+        .left {
+            width: 100%;
+        }
+
+        .toggle {
+            display: block !important;
+        }
+
+        nav {
+            display: none;
+        }
+
+        div.big-device {
+            display: none;
+        }
+
+        div.small-device {
+            display: flex !important;
+        }
+
+    }
+
+    div.small-device {
+        display: none;
+    }
+
+    .toggle {
+        display: none;
+        background-color: #0f305f;
+        color: white;
+        text-align: right;
+        padding: 10px;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+
+    @keyframes move {
+        from {
+            left: 0;
+        }
+
+        to {
+            left: 100%;
+        }
+    }
+
+    .v-menu {
+        flex-direction: column;
+        overflow: hidden;
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+
+    }
+
+    .v-menu>li {
+        width: 90%;
+        border-top: 1px solid lightgray;
+    }
+
+    .v-menu>li>a {
+        float: left;
+        display: block;
+        color: black;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 17px;
+    }
+
+    .v-menu>li>a:hover {
+        color: red;
+    }
+
+    footer {
+        margin-top: 10px;
+        overflow: hidden;
+        background-color: white;
+        padding: 0.5rem;
+        color: black;
+    }
+
+    footer>span.moving {
+        position: relative;
+        animation: move 10s infinite;
+    }
+
+
+
+    .image>img {
+        border-radius: 7px;
+    }
+
+
+    .info>div {
+        padding: 10px;
+    }
+
+
+    input[type="text"],
+    input[type="email"],
+    textarea {
+        outline: none;
+        padding: 5px 0;
+        width: 100%;
+    }
+
+
+    .comment-info table {
+        /* background-color: #f3f3f3; */
+        padding: 20px 30px 15px;
+        width: 100%;
+    }
+
+    .comment-info table th {
+        font-weight: 600;
+        padding-bottom: 20px;
+        text-align: left;
+        text-transform: uppercase;
+        width: 25%;
+    }
+
+    .comment-info table td {
+        padding-bottom: 20px;
+    }
+
+    .comment-info p {
+        text-align: center;
+    }
+
+    .comment-info p button {
+        background-color: #666;
+        border: none;
+        border-radius: 4px;
+        color: #fff;
+        height: 36px;
+        text-align: center;
+        width: 100px;
+    }
+
+    @media only screen and (max-width: 873px) {
+
+        .comment-info table th,
+        .comment-info table td {
+            display: block;
+        }
+
+        .comment-info p button {
+            width: 50%;
+            min-width: 200px;
+        }
+    }
+
+
+    .header-btn {
+        color: white;
+        text-decoration: none;
+        background-color: #020101;
+    }
+
+
+
+    button {
+        outline: none !important;
+        border: none;
+        background: transparent;
+    }
+
+
+
+    /*    Nut bam*/
+    /* Nút Đã duyệt và Chờ xác nhận */
+    .status-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        margin: 0 10px;
+        color: white;
+        background: linear-gradient(90deg, #4caf50, #2e7d32);
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease-in-out;
+    }
+
+    .status-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Đã duyệt nút */
+    .approved-btn {
+        background: linear-gradient(90deg, #28a745, #218838);
+    }
+
+    /* Chờ xác nhận nút */
+    .pending-btn {
+        background: linear-gradient(90deg, #ffc107, #d39e00);
+        color: black;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+        margin-top: 20px;
+        font-size: 14px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Header của bảng */
+    table thead {
+        background: linear-gradient(90deg, #4caf50, #2e7d32);
+        color: white;
+        font-weight: bold;
+    }
+
+    table thead th {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    /* Dòng dữ liệu */
+    table tbody tr {
+        border-bottom: 1px solid #e0e0e0;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    /* Màu sắc xen kẽ */
+    table tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    table tbody tr:nth-child(odd) {
+        background-color: #ffffff;
+    }
+
+    /* Hiệu ứng hover khi rê chuột */
+    table tbody tr:hover {
+        background-color: #e8f5e9;
+    }
+
+    /* Các ô dữ liệu */
+    table td {
+        padding: 12px;
+        text-align: center;
+        vertical-align: middle;
+        color: #424242;
+    }
+
+    /* Tăng độ nổi bật cho nút trong bảng */
+    table a, table button {
+        text-decoration: none;
+        color: #007bff;
+        font-weight: bold;
+        border: none;
+        background: none;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: all 0.2s ease-in-out;
+    }
+
+    table a:hover, table button:hover {
+        background-color: #007bff;
+        color: white;
+    }
+    .footer {
+        background-color: #020101;
+        color: #fff;
+        padding: 40px 20px 20px;
+        font-family: 'Arial', sans-serif;
+    }
+
+    .footer-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .footer-left,
+    .footer-middle,
+    .footer-right {
+        flex: 1;
+        min-width: 220px;
+    }
+
+    .footer h2, .footer h3 {
+        color: #00bfff;
+    }
+
+    .footer ul {
+        list-style: none;
+        padding: 0;
+        line-height: 1.8;
+    }
+
+    .footer a {
+        color: #ccc;
+        text-decoration: none;
+    }
+
+    .footer a:hover {
+        color: #00bfff;
+    }
+
+    .footer-bottom {
+        text-align: center;
+        margin-top: 20px;
+        border-top: 1px solid #020101;
+        padding-top: 10px;
+        font-size: 14px;
+        color: #aaa;
+    }
+
+    .social-icons i {
+        margin-right: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .footer-container {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .footer-left, .footer-middle, .footer-right {
+            margin-bottom: 20px;
+        }
+    }
+
+
+</style>
+<body data-spy="scroll" data-target=".nav" data-offset="1">
+<header>
+    <div style="background-color: white;" class="flex border top">
+        <div class="container2">
+            <div class="header flex">
+                <div class="web icon">
+                    <a th:href="@{/api/home}"><img style="width: 50%; height: 50%;" src="https://res.cloudinary.com/phatle/image/upload/v1741188860/Home_1_jfpd90.jpg" alt=""></a>
+                </div>
+                <div class="right header flex">
+                    <div th:if="${username != null}" class="big-device flex">
+                        <div><a class="btn italic" th:href="@{/user/profile}"><h4 th:text="${username}"></h4></a></div>
+                        <div><a class="btn header-btn" th:href="@{/user/logout}"><i style="margin-right: 5px;"
+                                                                                    class="fa fa-address-book"></i>Đăng xuất</a></div>
+                        <div><a class="btn header-btn" href="/api/addroom"><i style="margin-right: 5px;"
+                                                                              class="fas fa-pen-alt"></i>Đăng tin</a></div>
+                    </div>
+                    <div th:if="${username == null}" class="big-device flex">
+                        <div><a class="btn header-btn" th:href="@{/user/login}"><i style="margin-right: 5px;"
+                                                                                   class="fa fa-sign-in"></i>Đăng nhập</a></div>
+                        <div><a class="btn header-btn" th:href="@{/user/register}"><i style="margin-right: 5px;"
+                                                                                      class="fa fa-address-book"></i>Đăng ký</a></div>
+                        <div th:if="${role == 'Landlord'}"><a class="btn header-btn" href="/api/room/addroom"><i style="margin-right: 5px;"
+                                                                                                                 class="fas fa-pen-alt"></i>Đăng tin</a></div>
+                    </div>
+                    <div class="small-device flex">
+                        <div><a href="@{/user/login}" type="button" style="padding: 3px;" class="fa fa-sign-in"></a></div>
+                        <div><a href="@{/user/register}" type="button" style="padding: 3px;" class="fa-solid fa-user-plus"></a></div>
+                        <div><a href="#" type="button" style="padding: 3px;" class="fa-solid fa-plus"></a></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</header>
+<div class="toggle">
+    <i class="fas fa-bars"></i>
+</div>
+<nav>
+    <div>
+        <div class="container2">
+            <ul class="menu flex" id="menu">
+                <li><a class="active" th:href="@{/api/home}">Trang chủ</a></li>
+                <li th:if="${role == 'Admin'}"><a href="/admin/UserManagement">Người dùng</a></li>
+                <li th:if="${role == 'Admin'}"><a href="/admin/RoomManagement">Phòng</a></li>
+                <li th:if="${role == 'Tenant'}"><a th:href="@{/user/schedule}">Lịch xem phòng</a></li>
+                <li th:if="${role == 'Landlord'}"><a th:href="@{/user/appointment}">Lịch hẹn</a></li>
+                <li th:if="${role == 'Landlord'}"><a th:href="@{/api/room/manage}">Quản lý phòng trọ</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <section>
+        <div style="margin-top: 10px;" class="content">
+            <div class="left border">
+                <!-- Nút bấm Đã duyệt và Chờ xác nhận -->
+                <div style="margin-bottom: 20px; text-align: center;">
+                    <button class="status-btn approved-btn" th:onclick="|window.location.href='@{/user/appointment?isApproval=true}'|">Đã duyệt</button>
+                    <button class="status-btn pending-btn" th:onclick="|window.location.href='@{/user/appointment?isApproval=false}'|">Chờ xác nhận</button>
+                </div>
+                <!-- Bảng dữ liệu -->
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="color: white; width: 100px; text-align: center">ID phòng</th>
+                        <th style="color: white; width: 250px; text-align: center">Họ và tên</th>
+                        <th style="color: white; width: 250px; text-align: center">Số điện thoại</th>
+                        <th style="color: white; width: 250px; text-align: center">Email</th>
+                        <th style="color: white; width: 100px; text-align: center">Số người</th>
+                        <th style="color: white; width: 200px; text-align: center">Phương tiện</th>
+                        <th style="color: white; width: 150px; text-align: center">Ngày đến</th>
+                        <th style="color: white; width: 250px;"></th>
+                    </tr>
+                    </thead>
+                    <tbody th:each="appoint, iterStat : ${Appointments}">
+                    <tr>
+                        <td style="width: 100px;text-align: center">
+                            <a th:href="@{'../api/room?room_id='+${appoint.getRoom_id()}}">
+                                <p th:text="${appoint.getRoom_id()}"></p>
+                            </a>
+                        </td>
+                        <td style="width: 250px;text-align: center" th:text="${appoint.getFullname()}"></td>
+                        <td style="width: 250px;text-align: center" th:text="${appoint.getTel()}"></td>
+                        <td style="width: 250px;text-align: center" th:text="${appoint.getEmail()}"></td>
+                        <td style="width: 100px;text-align: center" th:text="${appoint.getNumPeople()}"></td>
+                        <td style="width: 200px;text-align: center" th:text="${appoint.getTransportation()}"></td>
+                        <td style="width: 150px;text-align: center" th:text="${appoint.getComeDate()}"></td>
+                        <td style="width: 250px;text-align: center">
+                            <a th:if="${isApproval == 'false'}"
+                               th:href="@{'/user/permitAppointment?appointmentId=' + ${appoint.getId()}+'&pageNo='+${currentPage}}">
+                                Chấp nhận
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class = "box-footer clearfix">
+                    <ul class="pagination pagination-sm no-margin pull-right">
+                        <li th:if="${currentPage > 1}">
+                            <a th:href="@{'/user/schedule?pageNo=' + ${currentPage - 1} + '&isApproval=' + ${isApproval}}"><<</a>
+                        </li>
+                        <li th:each="i : ${#numbers.sequence(1, totalPage)}"
+                            th:classappend="${currentPage == i ? 'active' : ''}">
+                            <a th:href="@{'/user/schedule?pageNo=' + ${i} + '&isApproval=' + ${isApproval}}"
+                               th:text="${i}"></a>
+                        </li>
+                        <li th:if="${currentPage < totalPage}">
+                            <a th:href="@{'/user/schedule?pageNo=' + ${currentPage + 1} + '&isApproval=' + ${isApproval}}">>></a>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+<!-- Footer PHome -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-left">
+            <h2>PHome</h2>
+            <p>Giải pháp tìm phòng trọ nhanh chóng và tiện lợi dành cho sinh viên và người đi làm.</p>
+        </div>
+
+        <div class="footer-middle">
+            <h3>Liên hệ</h3>
+            <ul>
+                <li>📍 Địa chỉ: 123 Đường Trọ, Quận 10, TP.HCM</li>
+                <li>📞 Hotline: 0123 456 789</li>
+                <li>📧 Email: support@phome.vn</li>
+            </ul>
+        </div>
+
+        <div class="footer-right">
+            <h3>Theo dõi chúng tôi</h3>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i> Facebook</a><br>
+                <a href="#"><i class="fab fa-instagram"></i> Instagram</a><br>
+                <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 PHome. All rights reserved.</p>
+    </div>
+</footer>
+</body>
+</html>

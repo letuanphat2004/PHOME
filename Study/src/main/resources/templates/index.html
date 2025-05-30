@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:margin-left="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PHOME</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.7.0.js"
+          integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+
+</head>
+<style>
+  * {
+    margin: 0px;
+    padding: 0px;
+  }
+
+  hr {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    border-width: 1px;
+  }
+
+  a{
+    text-decoration: none !important;
+  }
+
+  .subject {
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .left {
+    background-color: #f5f5f5;
+    border: 1px solid;
+    width: 70%;
+    height: 100%;
+    margin-bottom: 20px;
+  }
+
+  .right {
+    /* background-color: white; */
+    /* border: 1px solid; */
+    width: 28%;
+    height: 100%;
+  }
+
+
+
+  .right-no-border {
+    width: 28%;
+    height: 100%;
+  }
+
+  .content {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+  }
+
+
+  .flex {
+    display: flex;
+    align-items: center;
+  }
+
+  .header {
+    justify-content: space-between;
+  }
+
+
+  .rightheader div {
+    padding: 10px;
+  }
+
+  .container {
+    width: 80%;
+    align-items: center;
+    margin: 0 auto;
+  }
+
+
+
+  body {
+    background-color: #f5f5f5;
+    justify-content: center;
+    position: relative;
+    align-items: center;
+
+  }
+
+  .border {
+    border: none;
+
+  }
+
+  nav {
+    background-color: #020101;
+  }
+
+  nav ul.menu {
+    display: flex;
+    overflow: hidden;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+  }
+
+  nav ul.menu>li>a {
+
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+
+  nav ul.menu>li:hover a {
+    border-bottom: 5px solid lightblue;
+    transition: all 0.1s;
+  }
+
+  nav ul.menu>li>a.active {
+    border-bottom: 5px solid lightblue;
+  }
+
+  @media screen and (max-width: 873px) {
+    .menu {
+      flex-direction: column;
+    }
+
+    .container{
+      width: 95%;
+    }
+
+    .content {
+      display: block;
+    }
+
+    .right {
+      width: 100%;
+    }
+
+    .left {
+      width: 100%;
+    }
+
+    .toggle {
+      display: block !important;
+    }
+
+    nav {
+      display: none;
+    }
+
+    div.big-device {
+      display: none;
+    }
+
+    div.small-device {
+      display: flex !important;
+    }
+
+    .main-info {
+      display: block;
+    }
+
+    .item{
+      display: flex;
+    }
+    .image{
+      width: 100% !important;
+      margin: 0 !important;
+    }
+    .info{
+      width: 100% !important;
+    }
+  }
+  div.small-device {
+    display: none;
+  }
+  .toggle {
+    display: none;
+    background-color: #0f305f;
+    color: white;
+    text-align: right;
+    padding: 10px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  @keyframes move {
+    from {
+      left: 0;
+    }
+
+    to {
+      left: 100%;
+    }
+  }
+
+  .v-menu>li {
+    width: 90%;
+    border-top: 1px solid lightgray;
+  }
+
+  .v-menu>li>a {
+    float: left;
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+
+  .v-menu>li>a:hover {
+    color: red;
+  }
+
+  footer {
+    margin-top: 10px;
+    overflow: hidden;
+    background-color: white;
+    padding: 0.5rem;
+    color: black;
+  }
+
+  footer>span.moving {
+    position: relative;
+    animation: move 10s infinite;
+  }
+
+  .item {
+    display: flex;
+    border-top: none;
+  }
+
+  .image {
+    width: 30%;
+    margin: auto 10px;
+    padding: 5px;
+  }
+
+  .image>img {
+    border-radius: 7px;
+  }
+
+
+
+  .info {
+    width: 70%;
+  }
+
+  .main-title {
+    width: 100%;
+    /* padding: 10px; */
+    font-size: 150%;
+  }
+
+  .main-info {
+    width: 100%;
+    justify-content: space-between;
+    /* padding: 10px; */
+  }
+
+  .info>div {
+    padding: 10px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  textarea {
+    outline: none;
+    padding: 5px 0;
+    width: 100%;
+  }
+
+
+  .comment-info table {
+    /* background-color: #f3f3f3; */
+    padding: 20px 30px 15px;
+    width: 100%;
+  }
+
+  .comment-info table th {
+    font-weight: 600;
+    padding-bottom: 20px;
+    text-align: left;
+    text-transform: uppercase;
+    width: 25%;
+  }
+
+  .comment-info table td {
+    padding-bottom: 20px;
+  }
+
+  .comment-info p {
+    text-align: center;
+  }
+
+  .comment-info p button {
+    background-color: #666;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    height: 36px;
+    text-align: center;
+    width: 100px;
+  }
+
+  @media only screen and (max-width: 873px) {
+    .comment-info {
+      max-width: 90%;
+      width: auto;
+    }
+
+    .comment-info table th,
+    .comment-info table td {
+      display: block;
+    }
+
+    .comment-info p button {
+      width: 50%;
+      min-width: 200px;
+    }
+  }
+
+  .header-btn {
+    color: white;
+    text-decoration: none;
+    background-color: #020101;
+  }
+
+  button {
+    outline: none !important;
+    border: none;
+    background: transparent;
+  }
+  .item {
+    position: relative;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e7eaf3;
+    box-shadow: 0 2px 8px rgba(18,102,221,0.06);
+    padding: 18px 14px;
+    margin-bottom: 18px;
+    transition: box-shadow 0.2s, border 0.2s;
+    z-index: 1;
+  }
+
+  .item:hover {
+    box-shadow: 0 8px 32px rgba(18,102,221,0.18), 0 2px 8px rgba(18,102,221,0.06);
+    border: 2px solid #1266dd;
+    z-index: 10;
+  }
+
+  .detail-btn {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    background: #1266dd;
+    color: #fff;
+    border: none;
+    border-radius: 18px;
+    padding: 8px 22px;
+    font-size: 16px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(18,102,221,0.10);
+    cursor: pointer;
+    display: none;
+    transition: background 0.2s;
+  }
+
+  .item:hover .detail-btn {
+    display: block;
+  }
+
+  .detail-btn:hover {
+    background: #084b9f;
+  }
+  .footer {
+    background-color: #020101;
+    color: #fff;
+    padding: 40px 20px 20px;
+    font-family: 'Arial', sans-serif;
+  }
+
+  .footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .footer-left,
+  .footer-middle,
+  .footer-right {
+    flex: 1;
+    min-width: 220px;
+  }
+
+  .footer h2, .footer h3 {
+    color: #00bfff;
+  }
+
+  .footer ul {
+    list-style: none;
+    padding: 0;
+    line-height: 1.8;
+  }
+
+  .footer a {
+    color: #ccc;
+    text-decoration: none;
+  }
+
+  .footer a:hover {
+    color: #00bfff;
+  }
+
+  .footer-bottom {
+    text-align: center;
+    margin-top: 20px;
+    border-top: 1px solid #020101;
+    padding-top: 10px;
+    font-size: 14px;
+    color: #aaa;
+  }
+
+  .social-icons i {
+    margin-right: 8px;
+  }
+
+  @media (max-width: 768px) {
+    .footer-container {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .footer-left, .footer-middle, .footer-right {
+      margin-bottom: 20px;
+    }
+  }
+
+
+  .slogan-section {
+    background-color: #f5f5f5;
+    padding: 60px 20px;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .slogan-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .slogan-text {
+    flex: 1;
+    min-width: 300px;
+    padding-right: 20px;
+  }
+
+  .slogan-text h2 {
+    font-size: 2rem;
+    color: #000;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .slogan-text p {
+    font-size: 1rem;
+    color: #495057;
+    line-height: 1.6;
+  }
+
+  .slogan-image {
+    flex: 1;
+    min-width: 300px;
+    text-align: center;
+  }
+
+  .slogan-image img {
+    max-width: 100%;
+    height: auto;
+
+  }
+
+</style>
+<body data-spy="scroll" data-target=".nav" data-offset="1">
+<header>
+  <div style="background-color: white;" class="flex border top">
+    <div class="container">
+      <div class="header flex">
+        <div class="web icon">
+          <a th:href="@{/api/home}"><img style="width: 50%; height: 50%;" src="https://res.cloudinary.com/phatle/image/upload/v1741188860/Home_1_jfpd90.jpg" alt=""></a>
+        </div>
+        <div class="right header flex">
+          <div th:if="${username != null}" class="big-device flex">
+            <div><a class="btn italic" th:href="@{/user/profile}"><h4 th:text="${username}"></h4></a></div>
+            <div><a class="btn header-btn" th:href="@{/user/logout}"><i style="margin-right: 5px;"
+                                                                        class="fa fa-address-book"></i>Đăng xuất</a></div>
+            <div th:if="${role == 'Landlord'}"><a class="btn header-btn" href="/api/room/addroom"><i style="margin-right: 5px;"
+                                                                                                     class="fas fa-pen-alt"></i>Đăng tin</a></div>
+          </div>
+          <div th:if="${username == null}" class="big-device flex">
+            <div><a class="btn header-btn" th:href="@{/user/login}"><i style="margin-right: 5px;"
+                                                                       class="fa fa-sign-in"></i>Đăng nhập</a></div>
+            <div><a class="btn header-btn" th:href="@{/user/register}"><i style="margin-right: 5px;"
+                                                                          class="fa fa-address-book"></i>Đăng ký</a></div>
+
+          </div>
+          <div class="small-device flex">
+            <div><a href="@{/user/login}" type="button" style="padding: 3px;" class="fa fa-sign-in"></a></div>
+            <div><a href="@{/user/register}" type="button" style="padding: 3px;" class="fa-solid fa-user-plus"></a></div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</header>
+<div class="toggle">
+  <i class="fas fa-bars"></i>
+</div>
+<nav>
+  <div>
+    <div class="container">
+      <ul class="menu flex" id="menu">
+        <li><a class="active" th:href="@{/api/home}">Trang chủ</a></li>
+        <li th:if="${role == 'Admin'}"><a href="/admin/UserManagement">Người dùng</a></li>
+        <li th:if="${role == 'Admin'}"><a href="/admin/RoomManagement">Phòng</a></li>
+        <li th:if="${role == 'Tenant'}"><a th:href="@{/user/schedule}">Lịch xem phòng</a></li>
+        <li th:if="${role == 'Landlord'}"><a th:href="@{/user/appointment}">Lịch hẹn</a></li>
+        <li th:if="${role == 'Landlord'}"><a th:href="@{/api/room/manage}">Quản lý phòng trọ</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<section class="slogan-section">
+  <div class="container">
+    <div class="slogan-content">
+      <div class="slogan-text">
+        <h2>Giải pháp tìm phòng nhanh chóng và tiện lợi </h2>
+      </div>
+      <div class="slogan-image">
+        <img src="https://res.cloudinary.com/phatle/image/upload/v1747587285/original-81bd173b8257f3708305cffb8d2374dd_q2a930.gif" alt="Tìm phòng tiện lợi" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="filter-container container" style="border-color: white">
+  <form th:action="@{/api/home}" method="GET" class="flex" style="justify-content: space-evenly; margin-top: 20px; margin-bottom: 20px;">
+    <!-- Lọc theo giá -->
+    <div class="filter-item">
+      <label for="price">Giá (triệu/tháng):</label>
+      <select id="price" name="price" th:value="${request.price}">
+        <option value="">Tất cả</option>
+        <option value="1" th:selected="${request.price == '1'}">Dưới 1 triệu</option>
+        <option value="1-2" th:selected="${request.price == '1-2'}">1 - 2 triệu</option>
+        <option value="2-3" th:selected="${request.price == '2-3'}">2 - 3 triệu</option>
+        <option value="3" th:selected="${request.price == '3'}">Trên 3 triệu</option>
+      </select>
+    </div>
+
+    <!-- Lọc theo địa chỉ -->
+    <div class="filter-item">
+      <label for="address">Địa chỉ:</label>
+      <select id="address" name="address" th:value="${request.address}">
+        <option value="">Tất cả</option>
+        <option value="Biên Giang" th:selected="${request.address == 'Biên Giang'}">Biên Giang</option>
+        <option value="Dương Nội" th:selected="${request.address == 'Dương Nội'}">Dương Nội</option>
+        <option value="Đồng Mai" th:selected="${request.address == 'Đồng Mai'}">Đồng Mai</option>
+        <option value="Hà Cầu" th:selected="${request.address == 'Hà Cầu'}">Hà Cầu</option>
+        <option value="Kiến Hưng" th:selected="${request.address == 'Kiến Hưng'}">Kiến Hưng</option>
+        <option value="La Khê" th:selected="${request.address == 'La Khê'}">La Khê</option>
+        <option value="Mộ Lao" th:selected="${request.address == 'Mộ Lao'}">Mộ Lao</option>
+        <option value="Nguyễn Trãi" th:selected="${request.address == 'Nguyễn Trãi'}">Nguyễn Trãi</option>
+        <option value="Phú La" th:selected="${request.address == 'Phú La'}">Phú La</option>
+        <option value="Phú Lãm" th:selected="${request.address == 'Phú Lãm'}">Phú Lãm</option>
+        <option value="Phú Lương" th:selected="${request.address == 'Phú Lương'}">Phú Lương</option>
+        <option value="Phúc La" th:selected="${request.address == 'Phúc La'}">Phúc La</option>
+        <option value="Quang Trung" th:selected="${request.address == 'Quang Trung'}">Quang Trung</option>
+        <option value="Vạn Phúc" th:selected="${request.address == 'Vạn Phúc'}">Vạn Phúc</option>
+        <option value="Văn Quán" th:selected="${request.address == 'Văn Quán'}">Văn Quán</option>
+        <option value="Yên Nghĩa" th:selected="${request.address == 'Yên Nghĩa'}">Yên Nghĩa</option>
+        <option value="Yết Kiêu" th:selected="${request.address == 'Yết Kiêu'}">Yết Kiêu</option>
+      </select>
+
+
+    </div>
+
+    <!-- Lọc theo diện tích -->
+    <div class="filter-item">
+      <label for="area">Diện tích (m²):</label>
+      <select id="area" name="area" th:value="${request.area}">
+        <option value="">Tất cả</option>
+        <option value="20" th:selected="${request.area == '20'}">Dưới 20m²</option>
+        <option value="20-30" th:selected="${request.area == '20-30'}">20 - 30m²</option>
+        <option value="30-40" th:selected="${request.area == '30-40'}">30 - 40m²</option>
+        <option value="40" th:selected="${request.area == '40'}">Trên 40m²</option>
+      </select>
+    </div>
+
+    <!-- Lọc theo kiểu phòng -->
+    <div class="filter-item">
+      <label for="roomType">Kiểu phòng:</label>
+      <select id="roomType" name="roomType" th:value="${request.roomType}">
+        <option value="">Tất cả</option>
+        <option value="CHUNG_CHU" th:selected="${request.roomType == 'CHUNG_CHU'}">Chung chủ</option>
+        <option value="KHONG_CHUNG_CHU" th:selected="${request.roomType == 'KHONG_CHUNG_CHU'}">Không chung chủ</option>
+      </select>
+    </div>
+
+
+    <!-- Nút lọc -->
+    <div class="filter-item">
+      <button type="submit" class="btn header-btn">Lọc kết quả</button>
+    </div>
+  </form>
+</div>
+
+
+<div class="container">
+  <section>
+    <div style="margin-top: 10px;" class="content">
+      <div class="left border">
+        <h3 class="subject">Phòng trọ sinh viên khu vực hà đông</h3>
+        <div class="items" id="phongtro" th:each="room: ${rooms}">
+          <div class="item">
+            <div class="image">
+              <a th:href="@{'/api/room?room_id='+${room.getRoom_id()}}">
+                <img th:src="@{${room.getImage()}}" style="width: 100%;height: 100%"  alt=""/>
+              </a>
+            </div>
+            <div class="info">
+              <div class="main-title">
+                <a th:href="@{'/api/room?room_id='+${room.getRoom_id()}}">Phòng cho thuê rộng rãi thoải mái</a>
+
+              </div>
+              <div class="main-info">
+                <div>
+                  <p th:text="'Giá: ' + ${room.getPrice()} + ' triệu/tháng - ' + ${room.getRoomType()}">
+                  </p>
+                </div>
+                <div><p th:text="'Diện tích: '+${room.getArea()} + 'm2'"></p></div>
+                <div><p th:text="${'Địa chỉ: '+room.getAddress()}"></p></div>
+              </div>
+              <div><p th:text="${room.getDescription()}"></p>
+              </div>
+
+                <a class="detail-btn"
+                   th:href="@{'/api/room?room_id='+${room.getRoom_id()}}">
+                  Chi tiết
+                </a>
+
+            </div>
+          </div>
+
+        </div>
+        <div class = "box-footer clearfix">
+          <ul class="pagination pagination-sm no-margin pull-right">
+            <li th:if="${currentPage > 1}">
+              <a th:href="@{'/api/home?pageNo=' + ${currentPage - 1} + '&price=' + ${request.price} + '&address=' + ${request.address} + '&area=' + ${request.area} + '&roomType=' + ${request.roomType}}"><<</a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(1, totalPage)}"
+                th:classappend="${currentPage == i ? 'active' : ''}">
+              <a th:href="@{'/api/home?pageNo=' + ${i} + '&price=' + ${request.price} + '&address=' + ${request.address} + '&area=' + ${request.area} + '&roomType=' + ${request.roomType}}"
+                 th:text="${i}"></a>
+            </li>
+            <li th:if="${currentPage < totalPage}">
+              <a th:href="@{'/api/home?pageNo=' + ${currentPage + 1} + '&price=' + ${request.price} + '&address=' + ${request.address} + '&area=' + ${request.area} + '&roomType=' + ${request.roomType}}">>></a>
+            </li>
+          </ul>
+
+        </div>
+      </div>
+      <div class="right-no-border"></div>
+      <div class="right-no-border"></div>
+
+    </div>
+  </section>
+
+</div>
+<!-- Footer PHome -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-left">
+      <h2>PHome</h2>
+      <p>Giải pháp tìm phòng trọ nhanh chóng và tiện lợi dành cho sinh viên và người đi làm.</p>
+    </div>
+
+    <div class="footer-middle">
+      <h3>Liên hệ</h3>
+      <ul>
+        <li>📍 Địa chỉ: 123 Đường Trọ, Quận 10, TP.HCM</li>
+        <li>📞 Hotline: 0123 456 789</li>
+        <li>📧 Email: support@phome.vn</li>
+      </ul>
+    </div>
+
+    <div class="footer-right">
+      <h3>Theo dõi chúng tôi</h3>
+      <div class="social-icons">
+        <a href="#"><i class="fab fa-facebook-f"></i> Facebook</a><br>
+        <a href="#"><i class="fab fa-instagram"></i> Instagram</a><br>
+        <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2025 PHome. All rights reserved.</p>
+  </div>
+</footer>
+
+
+</body>
+
+</html>

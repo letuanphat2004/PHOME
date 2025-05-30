@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.7.0.js"
+          integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+  <title>Login</title>
+</head>
+<style>
+
+  * {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+  }
+
+  div {
+    display: block;
+  }
+
+  .container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    background: #dce3ed
+  }
+
+  .wrap {
+    width: 960px;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 100px;
+  }
+
+  .left-pic {
+    width: 45%;
+    margin: auto 0;
+  }
+
+  .right-form {
+    width: 45%;
+  }
+
+  .form-title {
+    font-family: Poppins-Bold;
+    font-size: 24px;
+    color: #333333;
+    line-height: 1.2;
+    text-align: center;
+    width: 100%;
+    display: block;
+    padding-bottom: 54px;
+  }
+
+  .validate-input {
+    position: relative;
+  }
+
+  .wrap-input {
+    position: relative;
+    width: 100%;
+    z-index: 1;
+    margin-bottom: 10px;
+  }
+
+  .input {
+    font-family: Poppins-Medium;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #666666;
+    display: block;
+    width: 100%;
+    background: #e6e6e6;
+    height: 50px;
+    border-radius: 25px;
+    padding: 0 30px 0 68px;
+  }
+
+  input {
+    outline: none;
+    border: none;
+  }
+
+  button, input {
+    overflow: visible;
+  }
+
+  button, input, optgroup, select, textarea {
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  .symbol-input {
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    position: absolute;
+    border-radius: 25px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding-left: 35px;
+    pointer-events: none;
+    color: #666666;
+  }
+
+  .fa {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .wrap-login-btn {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-top: 20px;
+  }
+
+  .login-btn {
+    font-family: Montserrat-Bold;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #fff;
+    text-transform: uppercase;
+    width: 100%;
+    height: 50px;
+    border-radius: 25px;
+    background: #57b846;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 25px;
+  }
+
+  button {
+    outline: none !important;
+    border: none;
+    background: transparent;
+  }
+
+  .p-t-20 {
+    padding-top: 20px;
+  }
+
+  .flex{
+    display: flex;
+  }
+
+  @media screen and (max-width: 873px) {
+    .wrap{
+      display: block;
+      padding: 50px;
+      width: 70%;
+    }
+    .left-pic{
+      display: none;
+    }
+    .right-form{
+      width: 100%;
+    }
+    .p-t-20 {
+      padding-top: 20px;
+    }
+  }
+</style>
+<body>
+<div class="container">
+  <div class="wrap">
+    <div class="left-pic">
+      <img style="width: 100%; text-align: center;" src="https://res.cloudinary.com/phatle/image/upload/v1741188860/Home_1_jfpd90.jpg"  alt=""/>
+    </div>
+
+    <form class="right-form validate-form" th:action="@{/user/login/credentials}" method="post">
+                <span class="form-title">
+                    Đăng nhập
+                </span>
+
+      <div class="wrap-input validate-input">
+        <input class="input" type="text" name="username" placeholder="Tên đăng nhập..." required>
+        <span class="focus-input"></span>
+        <span class="symbol-input">
+                        <i class="fa fa-envelope" aria-hidden="true"></i>
+                    </span>
+      </div>
+
+      <div class="wrap-input validate-input" data-validate="Password is required">
+        <input class="input" type="password" name="password" placeholder="Mật khẩu..." required>
+        <span class="focus-input"></span>
+        <span class="symbol-input">
+                        <i class="fa fa-lock" aria-hidden="true"></i>
+                    </span>
+      </div>
+
+      <div class="wrap-login-btn">
+        <button  class="login-btn">
+          Đăng nhập
+        </button>
+      </div>
+
+
+
+      <div class="text-center p-t-20">
+                    <span>
+                        Quên
+                    </span>
+        <a class="txt2" th:href="@{/user/retrievePassword}">
+          Mật khẩu?
+        </a>
+      </div>
+
+      <div class="text-center p-t-20">
+        <a th:href="@{/user/register}">
+          Tạo tài khoản
+          <i class="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i>
+        </a>
+
+      </div>
+    </form>
+
+
+
+
+  </div>
+</div>
+</body>
+<script>
+
+  $(document).ready(() => {
+    $('.toggle').click(function () {
+      $('nav').slideToggle();
+    });
+
+    $('textarea').each(function () {
+      this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;overflow-y:hidden;');
+    }).on('input', function () {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight) + 'px';
+    });
+
+
+    $(window).scroll(function () {
+      if ($(this).scrollTop() > 150) {
+        $('nav').addClass('sticky');
+        $('ul.menu > li > a').addClass('smaller');
+      } else {
+        $('nav').removeClass('sticky');
+        $('ul.menu > li > a').removeClass('smaller');
+      }
+    })
+  });
+
+
+  window.onload = function() {
+    let images =document.querySelectorAll(".thump img");
+    for(let ima of images)
+      ima.onclick = function() {
+        let d = document.getElementById("main");
+        d.src = this.src;
+      }
+  }
+</script>
+</html>

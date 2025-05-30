@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phòng trọ sinh viên</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.7.0.js"
+          integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+</head>
+<style>
+  * {
+    margin: 0px;
+    padding: 0px;
+  }
+
+  hr {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    border-width: 1px;
+  }
+
+  a {
+    text-decoration: none !important;
+  }
+
+  .subject {
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .left {
+    background-color: white;
+    border: 1px solid;
+    width: 70%;
+    height: 100%;
+    margin-bottom: 20px;
+  }
+
+  .right {
+    /* background-color: white; */
+    /* border: 1px solid; */
+    width: 28%;
+    height: 100%;
+  }
+
+
+
+  .content {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+  }
+
+
+  .flex {
+    display: flex;
+    align-items: center;
+  }
+
+  .header {
+    justify-content: space-between;
+  }
+
+
+  .rightheader div {
+    padding: 10px;
+  }
+
+
+
+  .container {
+    width: 80%;
+    align-items: center;
+    margin: 0 auto;
+  }
+
+
+
+  body {
+    justify-content: center;
+    position: relative;
+    align-items: center;
+    background: #ffffff;
+
+  }
+
+  .border {
+    border: 0.5px solid gray;
+    border-radius: 7px;
+  }
+
+
+  nav {
+    background-color: #020101;
+  }
+
+
+  nav ul.menu {
+    display: flex;
+    overflow: hidden;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+  }
+
+  nav ul.menu > li > a {
+
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+
+  nav ul.menu > li:hover a {
+    border-bottom: 5px solid lightblue;
+    transition: all 0.1s;
+  }
+
+  nav ul.menu > li > a.active {
+    border-bottom: 5px solid lightblue;
+  }
+
+  @media screen and (max-width: 873px) {
+    .menu {
+      flex-direction: column;
+    }
+
+    .container {
+      width: 95%;
+    }
+
+    .content {
+      display: block;
+    }
+
+    .right {
+      width: 100%;
+    }
+
+    .left {
+      width: 100%;
+    }
+
+    .toggle {
+      display: block !important;
+    }
+
+    nav {
+      display: none;
+    }
+
+    div.big-device {
+      display: none;
+    }
+
+    div.small-device {
+      display: flex !important;
+    }
+
+    .main-info {
+      display: block;
+    }
+
+
+
+    .item {
+      display: block !important;
+    }
+
+    .image {
+      width: 100% !important;
+      margin: 0 !important;
+    }
+
+    .info {
+      width: 100% !important;
+    }
+  }
+
+
+  div.small-device {
+    display: none;
+  }
+
+  .toggle {
+    display: none;
+    background-color: #0f305f;
+    color: white;
+    text-align: right;
+    padding: 10px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+
+  @keyframes move {
+    from {
+      left: 0;
+    }
+
+    to {
+      left: 100%;
+    }
+  }
+
+
+
+  .v-menu > li {
+    width: 90%;
+    border-top: 1px solid lightgray;
+  }
+
+  .v-menu > li > a {
+    float: left;
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+
+  .v-menu > li > a:hover {
+    color: red;
+  }
+
+  footer {
+    margin-top: 10px;
+    overflow: hidden;
+    background-color: white;
+    padding: 0.5rem;
+    color: black;
+  }
+
+  footer > span.moving {
+    position: relative;
+    animation: move 10s infinite;
+  }
+
+  .item {
+    display: flex;
+    border-top: 1px solid gray;
+  }
+
+  .image {
+    width: 30%;
+    margin: auto 10px;
+    padding: 5px;
+  }
+
+  .image > img {
+    border-radius: 7px;
+  }
+
+
+
+  .info {
+    width: 70%;
+  }
+
+  .main-title {
+    width: 100%;
+    /* padding: 10px; */
+    font-size: 150%;
+  }
+
+  .main-info {
+    width: 100%;
+    justify-content: space-between;
+    /* padding: 10px; */
+  }
+
+  .info > div {
+    padding: 10px;
+  }
+
+
+
+  input[type="text"],
+  input[type="email"],
+  textarea {
+    outline: none;
+    padding: 5px 0;
+    width: 100%;
+  }
+
+  /* .comment-info {
+      width: 90%;
+      margin: 0px auto;
+  } */
+
+  .comment-info table {
+    /* background-color: #f3f3f3; */
+    padding: 20px 30px 15px;
+    width: 100%;
+  }
+
+  .comment-info table th {
+    font-weight: 600;
+    padding-bottom: 20px;
+    text-align: left;
+    text-transform: uppercase;
+    width: 25%;
+  }
+
+  .comment-info table td {
+    padding-bottom: 20px;
+  }
+
+  .comment-info p {
+    text-align: center;
+  }
+
+  .comment-info p button {
+    background-color: #666;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    height: 36px;
+    text-align: center;
+    width: 100px;
+  }
+
+  @media only screen and (max-width: 873px) {
+    .comment-info {
+      max-width: 90%;
+      width: auto;
+    }
+
+    .comment-info table th,
+    .comment-info table td {
+      display: block;
+    }
+
+    .comment-info p button {
+      width: 50%;
+      min-width: 200px;
+    }
+  }
+
+
+
+  .header-btn {
+    color: white;
+    text-decoration: none;
+    background-color: #020101;
+  }
+
+
+
+  button {
+    outline: none !important;
+    border: none;
+    background: transparent;
+  }
+
+  /*    Nut bam*/
+  /* Nút Đã duyệt và Chờ xác nhận */
+  .status-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    margin: 0 10px;
+    color: white;
+    background: linear-gradient(90deg, #4caf50, #2e7d32);
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+  }
+
+  /* Đã duyệt nút */
+  .approved-btn {
+    background: linear-gradient(90deg, #28a745, #218838);
+  }
+
+  /* Chờ xác nhận nút */
+  .pending-btn {
+    background: linear-gradient(90deg, #ffc107, #d39e00);
+    color: black;
+  }
+</style>
+
+<body data-spy="scroll" data-target=".nav" data-offset="1">
+<header>
+  <div style="background-color: white;" class="flex border top">
+    <div class="container">
+      <div class="header flex">
+        <div class="web icon">
+          <a th:href="@{/api/home}"><img style="width: 50%; height: 50%;"
+                                         src="https://res.cloudinary.com/phatle/image/upload/v1741188860/Home_1_jfpd90.jpg"
+                                         alt=""></a>
+        </div>
+        <div class="right header flex">
+          <div th:if="${username != null}" class="big-device flex">
+            <div><a class="btn italic" th:href="@{/user/profile}"><h4 th:text="${username}"></h4></a></div>
+            <div><a class="btn header-btn" th:href="@{/user/logout}"><i style="margin-right: 5px;"
+                                                                        class="fa fa-address-book"></i>Đăng
+              xuất</a></div>
+            <div><a class="btn header-btn" href="/api/room/addroom"><i style="margin-right: 5px;"
+                                                                       class="fas fa-pen-alt"></i>Đăng tin</a>
+            </div>
+          </div>
+          <div th:if="${username == null}" class="big-device flex">
+            <div><a class="btn header-btn" th:href="@{/user/login}"><i style="margin-right: 5px;"
+                                                                       class="fa fa-sign-in"></i>Đăng
+              nhập</a></div>
+            <div><a class="btn header-btn" th:href="@{/user/register}"><i style="margin-right: 5px;"
+                                                                          class="fa fa-address-book"></i>Đăng
+              ký</a></div>
+          </div>
+          <div class="small-device flex">
+            <div><a href="@{/user/login}" type="button" style="padding: 3px;" class="fa fa-sign-in"></a>
+            </div>
+            <div><a href="@{/user/register}" type="button" style="padding: 3px;"
+                    class="fa-solid fa-user-plus"></a></div>
+            <div><a href="#" type="button" style="padding: 3px;" class="fa-solid fa-plus"></a></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</header>
+<div class="toggle">
+  <i class="fas fa-bars"></i>
+</div>
+<nav>
+  <div>
+    <div class="container">
+      <ul class="menu flex" id="menu">
+        <li><a class="active" th:href="@{/api/home}">Trang chủ</a></li>
+        <li th:if="${role == 'Admin'}"><a href="/admin/UserManagement">Người dùng</a></li>
+        <li th:if="${role == 'Admin'}"><a href="/admin/RoomManagement">Phòng</a></li>
+        <li th:if="${role == 'Tenant'}"><a th:href="@{/user/schedule}">Lịch xem phòng</a></li>
+        <li th:if="${role == 'Landlord'}"><a th:href="@{/user/appointment}">Lịch hẹn</a></li>
+        <li th:if="${role == 'Landlord'}"><a th:href="@{/api/room/manage}">Quản lý phòng trọ</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <section>
+    <div style="margin-top: 10px;" class="content">
+
+      <div class="left border">
+        <h3 class="subject">Danh sách phòng trọ</h3>
+        <div style="margin-bottom: 20px; text-align: center;">
+          <button class="status-btn approved-btn" th:onclick="|window.location.href='@{/api/room/manage?isApproval=true}'|">Đã duyệt</button>
+          <button class="status-btn pending-btn" th:onclick="|window.location.href='@{/api/room/manage?isApproval=false}'|">Chờ xác nhận</button>
+        </div>
+        <div class="items" id="phongtro" th:each="room: ${rooms}">
+          <div class="item">
+            <div class="image"><a th:href="@{'/api/room?room_id='+${room.getRoom_id()}}"><img
+                    th:src="@{${room.getImage()}}" style="width: 100%;height: 100%" alt=""/></a></div>
+            <div class="info">
+              <div class="main-title"><a th:href="@{'/api/room?room_id='+${room.getRoom_id()}}"></a>
+              </div>
+              <div class="main-info">
+                <div>
+                  <p th:text="'Giá: ' + ${room.getPrice()} + ' triệu/tháng - ' + ${room.getRoomType()}">
+                  </p>
+                </div>
+                <div><p th:text="'Diện tích: '+${room.getArea()} + 'm2'"></p></div>
+                <div><p th:text="${'Địa chỉ: '+room.getAddress()}"></p></div>
+              </div>
+              <div><p th:text="${room.getDescription()}"></p>
+              </div>
+              <div style="width: 100px; text-align: center;">
+                <!-- Lưu URL xóa trong input hidden -->
+                <input type="text" th:value="'/api/room/delete?roomId=' + ${room.getRoom_id()}" hidden="hidden" th:id="'url-' + ${room.getRoom_id()}"/>
+                <a href="#" th:onclick="'confirmDelete('+${room.getRoom_id()}+')'">Xóa</a>
+              </div>
+              <div>
+                <a href="#" th:onclick="'sendRoomId(' + ${room.getRoom_id()} + ')'">Cập nhật</a>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+        <div class = "box-footer clearfix">
+          <ul class="pagination pagination-sm no-margin pull-right">
+            <li th:if="${currentPage > 1}">
+              <a th:href="@{'/api/room/manage?pageNo=' + ${currentPage - 1} + '&isApproval=' + ${isApproval}}"><<</a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(1, totalPage)}"
+                th:classappend="${currentPage == i ? 'active' : ''}">
+              <a th:href="@{'/api/room/manage?pageNo=' + ${i} + '&isApproval=' + ${isApproval}}"
+                 th:text="${i}"></a>
+            </li>
+            <li th:if="${currentPage < totalPage}">
+              <a th:href="@{'/api/room/manage?pageNo=' + ${currentPage + 1} + '&isApproval=' + ${isApproval}}">>></a>
+            </li>
+          </ul>
+
+        </div>
+      </div>
+
+
+    </div>
+  </section>
+
+</div>
+<script>
+  function confirmDelete(id) {
+    const url = document.getElementById(`url-${id}`).value;
+    // Hiển thị hộp thoại xác nhận
+    if (confirm("Bạn có chắc chắn muốn xóa?")) {
+      // Nếu chọn "Có", điều hướng tới URL được cung cấp
+      window.location.href = url;
+    } else {
+      // Nếu chọn "Không", không làm gì
+      return false;
+    }
+  }
+
+  function sendRoomId(roomId){
+    const url = `/api/room/update?roomId=${roomId}`; // Đường dẫn API kèm roomId
+    // Thực hiện điều hướng đến URL hoặc fetch dữ liệu
+    window.location.href = url;
+  }
+
+</script>
+
+</body>
+
+</html>
+
