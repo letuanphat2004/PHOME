@@ -16,6 +16,17 @@ import java.util.Date;
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     Page<Appointment> getAllByUsernameOrderByComeDateAsc(String username, Pageable pageable);
 
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.username = :username " +
+            "AND a.room_id = :roomId AND a.comeDate = :comeDate")
+    boolean existsSameBooking(@Param("username") String username, @Param("roomId") long roomId,
+                              @Param("comeDate") Date comeDate);
+
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.username = :username " +
+            "AND a.room_id = :roomId AND a.comeDate = :comeDate AND a.id <> :appointmentId")
+    boolean existsOtherSameBooking(@Param("username") String username, @Param("roomId") long roomId,
+                                   @Param("comeDate") Date comeDate,
+                                   @Param("appointmentId") long appointmentId);
+
     @Query("SELECT a FROM Appointment AS a " +
             "INNER JOIN Room as r " +
             "ON r.id = a.room_id " +

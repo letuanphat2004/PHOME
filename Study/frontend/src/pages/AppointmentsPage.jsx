@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, CalendarDays, Check, MapPin, RefreshCw, Trash2 } from "lucide-react";
+import { CalendarClock, CalendarDays, Check, MapPin, RefreshCw, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { api, errorMessage } from "../api/client";
@@ -10,6 +10,9 @@ export default function AppointmentsPage() {
   const queryClient = useQueryClient();
   const landlord = user?.role === "Landlord";
   const [approved, setApproved] = useState("false");
+  const [tenantFilter, setTenantFilter] = useState("all");
+  const [editing, setEditing] = useState(null);
+  const [newDate, setNewDate] = useState("");
   const [notice, setNotice] = useState(null);
   const query = useQuery({
     queryKey: ["appointments", landlord ? "received" : "mine", landlord ? approved : "all"],
@@ -23,6 +26,7 @@ export default function AppointmentsPage() {
       return api.delete(`/appointments/${id}`);
     },
     onSuccess: (_, variables) => {
+      setEditing(null);
       setNotice({ type: "success", text: variables.type === "approve" ? "Đã duyệt lịch xem phòng." : variables.type === "update" ? "Đã cập nhật ngày xem phòng." : "Đã hủy lịch xem phòng." });
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
     },
@@ -38,10 +42,10 @@ export default function AppointmentsPage() {
       setNotice(null); action.mutate({ id: item.id, type: "approve" });
     }
   };
-  const updateAppointment = (item) => {
+  const openDateEditor = (item) => {
     const [day, month, year] = item.comeDate.split("/");
-    const comeDate = window.prompt("Ngày xem mới (YYYY-MM-DD)", `${year}-${month}-${day}`);
-    if (comeDate) { setNotice(null); action.mutate({ id: item.id, type: "update", comeDate }); }
+    setNewDate(`${year}-${month}-${day}`);
+    setEditing(item);
   };
   const deleteAppointment = (item) => {
     if (window.confirm(`Hủy lịch xem phòng ngày ${item.comeDate}?`)) {
@@ -56,15 +60,19 @@ export default function AppointmentsPage() {
       <p>{landlord ? "Xem thông tin người thuê và xác nhận các yêu cầu xem phòng." : "Theo dõi và quản lý những buổi xem phòng đã đặt."}</p>
     </div>
     {notice && <div className={`notice ${notice.type}`}>{notice.text}</div>}
-    {landlord && <div className="tabs" role="tablist" aria-label="Trạng thái lịch hẹn">
+    {landlord ? <div className="tabs" role="tablist" aria-label="Trạng thái lịch hẹn">
       <button className={approved === "false" ? "active" : ""} onClick={() => { setApproved("false"); setNotice(null); }}>Chờ xác nhận</button>
       <button className={approved === "true" ? "active" : ""} onClick={() => { setApproved("true"); setNotice(null); }}>Đã xác nhận</button>
+    </div> : <div className="tabs" role="tablist" aria-label="Lọc lịch đã đặt">
+      <button className={tenantFilter === "all" ? "active" : ""} onClick={() => setTenantFilter("all")}>Tất cả</button>
+      <button className={tenantFilter === "pending" ? "active" : ""} onClick={() => setTenantFilter("pending")}>Chờ xác nhận</button>
+      <button className={tenantFilter === "approved" ? "active" : ""} onClick={() => setTenantFilter("approved")}>Đã xác nhận</button>
     </div>}
     {query.isLoading ? <div className="state-card">Đang tải lịch hẹn…</div> : query.isError ?
       <div className="state-card error-state"><p>{errorMessage(query.error)}</p><button className="button secondary" onClick={() => query.refetch()}><RefreshCw /> Thử lại</button></div> :
       <div className="data-list appointment-list">
-        {query.data.length === 0 && <div className="empty empty-card"><CalendarDays /><h2>Chưa có lịch hẹn nào</h2><p>{landlord && approved === "false" ? "Yêu cầu mới từ người thuê sẽ xuất hiện tại đây." : "Không có lịch hẹn trong trạng thái này."}</p>{!landlord && <Link className="button" to="/">Tìm phòng</Link>}</div>}
-        {query.data.map((item) => {
+        {query.data.filter((item) => landlord || tenantFilter === "all" || (tenantFilter === "approved" ? item.isApproval === "true" : item.isApproval !== "true")).length === 0 && <div className="empty empty-card"><CalendarDays /><h2>Chưa có lịch hẹn nào</h2><p>{landlord && approved === "false" ? "Yêu cầu mới từ người thuê sẽ xuất hiện tại đây." : "Không có lịch hẹn trong trạng thái này."}</p>{!landlord && <Link className="button" to="/">Tìm phòng</Link>}</div>}
+        {query.data.filter((item) => landlord || tenantFilter === "all" || (tenantFilter === "approved" ? item.isApproval === "true" : item.isApproval !== "true")).map((item) => {
           const [day, month] = item.comeDate.split("/");
           return <article key={item.id}>
             <div className="date-tile"><strong>{day}</strong><span>THÁNG {month}</span></div>
@@ -78,11 +86,23 @@ export default function AppointmentsPage() {
             {landlord && item.isApproval !== "true" ?
               <button className="appointment-action approve" disabled={action.isPending} onClick={() => approveAppointment(item)}><Check /> Xác nhận</button> :
               !landlord && <div className="appointment-actions">
-                {item.isApproval !== "true" && <button className="icon-action" title="Đổi ngày" disabled={action.isPending} onClick={() => updateAppointment(item)}><CalendarClock /></button>}
+                {item.isApproval !== "true" && <button className="icon-action" title="Đổi ngày" disabled={action.isPending} onClick={() => openDateEditor(item)}><CalendarClock /></button>}
                 <button className="icon-action danger" title="Hủy lịch" disabled={action.isPending} onClick={() => deleteAppointment(item)}><Trash2 /></button>
               </div>}
           </article>;
         })}
       </div>}
+    {editing && <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && !action.isPending && setEditing(null)}>
+      <section className="modal date-editor" role="dialog" aria-modal="true" aria-labelledby="date-editor-title">
+        <button className="modal-close" onClick={() => setEditing(null)} disabled={action.isPending} aria-label="Đóng"><X /></button>
+        <span className="eyebrow">Điều chỉnh lịch hẹn</span><h2 id="date-editor-title">Chọn ngày xem mới</h2>
+        <p className="editor-note">Phòng: {editing.roomAddress || `#${editing.room_id}`}. Sau khi đổi ngày, lịch vẫn ở trạng thái chờ chủ nhà xác nhận.</p>
+        <form onSubmit={(event) => { event.preventDefault(); setNotice(null); action.mutate({ id: editing.id, type: "update", comeDate: newDate }); }}>
+          <label>Ngày xem<input type="date" min={new Date().toLocaleDateString("en-CA")} value={newDate} onChange={(event) => setNewDate(event.target.value)} required /></label>
+          {action.isError && <p className="form-error">{errorMessage(action.error)}</p>}
+          <div className="modal-actions"><button type="button" className="button secondary" onClick={() => setEditing(null)} disabled={action.isPending}>Hủy</button><button className="button" disabled={action.isPending}>{action.isPending ? "Đang lưu…" : "Lưu ngày mới"}</button></div>
+        </form>
+      </section>
+    </div>}
   </div>;
 }

@@ -882,6 +882,70 @@ footer span {
     gap: 8px;
   }
 }
+
+/* Tenant discovery and booking flow */
+.tenant-search { grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(130px, 1fr)) auto; max-width: 1320px; }
+.tenant-results-heading { gap: 24px; }
+.results-tools { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
+.results-tools select { padding: 10px 34px 10px 12px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--green); }
+.reset-filters { display: inline-flex; align-items: center; gap: 6px; padding: 9px 11px; border: 0; background: transparent; color: #a3432f; font-weight: 700; font-size: 12px; }
+.reset-filters svg { width: 15px; }
+.room-card { position: relative; }
+.card-favorite {
+  position: absolute;
+  z-index: 4;
+  top: 13px;
+  right: 13px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .94);
+  color: var(--green);
+  box-shadow: 0 4px 14px rgba(20, 50, 38, .16);
+}
+.card-favorite svg { width: 19px; }
+.card-favorite.active { color: #c64c38; }
+.card-favorite.active svg { fill: currentColor; }
+.card-favorite:disabled { opacity: .6; }
+.room-gallery { display: grid; gap: 10px; }
+.gallery-main { position: relative; height: min(58vw, 570px); min-height: 320px; overflow: hidden; border-radius: 13px; background: #dfe4df; }
+.gallery-main img { width: 100%; height: 100%; object-fit: cover; }
+.gallery-main span { position: absolute; right: 16px; bottom: 16px; padding: 7px 11px; border-radius: 20px; background: rgba(16, 42, 31, .85); color: #fff; font-size: 11px; font-weight: 700; }
+.gallery-thumbnails { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; overflow-x: auto; }
+.gallery-thumbnails button { height: 88px; padding: 0; border: 2px solid transparent; border-radius: 7px; overflow: hidden; background: #ddd; }
+.gallery-thumbnails button.active { border-color: var(--orange); }
+.gallery-thumbnails img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.detail-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.detail-favorite { display: inline-flex; align-items: center; gap: 7px; flex: none; padding: 10px 13px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--green); font-size: 12px; font-weight: 700; }
+.detail-favorite svg { width: 17px; }
+.detail-favorite.active { color: #b84632; border-color: #e5bcb4; background: #fff5f2; }
+.detail-favorite.active svg { fill: currentColor; }
+.comment-avatar { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #e4eadf; color: var(--green); font-weight: 800; }
+.muted { color: var(--muted); }
+.notice a { text-decoration: underline; font-weight: 700; }
+.booking-modal { width: min(680px, 100%); }
+.booking-modal .booking-form { border-top: 0; padding-top: 0; }
+.booking-form select { display: block; width: 100%; padding: 11px; border: 1px solid var(--line); border-radius: 6px; margin-top: 5px; background: #fff; }
+.date-editor { width: min(480px, 100%); }
+.date-editor form { display: grid; gap: 14px; }
+.date-editor label { font-size: 12px; font-weight: 700; }
+.date-editor input { display: block; width: 100%; padding: 12px; margin-top: 6px; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+
+@media (max-width: 1050px) {
+  .tenant-search { grid-template-columns: 2fr 1fr 1fr; }
+  .tenant-search label:nth-of-type(4) { border-top: 1px solid var(--line); }
+  .tenant-search .search-button { min-height: 58px; }
+}
+@media (max-width: 720px) {
+  .tenant-results-heading { align-items: flex-start; }
+  .results-tools { justify-content: flex-start; }
+  .gallery-thumbnails { grid-template-columns: repeat(4, minmax(95px, 1fr)); }
+  .gallery-main { height: 360px; min-height: 0; }
+  .detail-heading { flex-direction: column; }
+}
 .forgot-link {
   font-size: 13px;
   font-weight: 700;

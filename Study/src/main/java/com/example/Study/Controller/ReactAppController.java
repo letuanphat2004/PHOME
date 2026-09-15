@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class ReactAppController {
     @GetMapping({"/", "/login", "/register", "/forgot-password", "/account",
-            "/appointments", "/my-rooms", "/admin", "/rooms/{id}"})
+            "/appointments", "/favorites", "/my-rooms", "/admin", "/rooms/{id}"})
     public String reactApp() {
         return "forward:/index.html";
     }

@@ -7,6 +7,7 @@ import com.example.Study.Model.Request.Room.RoomFilterDataRequest;
 import com.example.Study.Respository.CommentRepository;
 import com.example.Study.Respository.UserRepository;
 import com.example.Study.Service.CommentService;
+import com.example.Study.Service.FavoriteService;
 import com.example.Study.Service.RoomService;
 import com.example.Study.Service.UserService;
 import com.example.Study.entity.Comment;
@@ -15,6 +16,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,14 +31,17 @@ public class ApiRoomController {
     private final CommentService commentService;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final FavoriteService favoriteService;
 
     public ApiRoomController(RoomService roomService, UserService userService, CommentService commentService,
-                             CommentRepository commentRepository, UserRepository userRepository) {
+                             CommentRepository commentRepository, UserRepository userRepository,
+                             FavoriteService favoriteService) {
         this.roomService = roomService;
         this.userService = userService;
         this.commentService = commentService;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
+        this.favoriteService = favoriteService;
     }
 
     @GetMapping
@@ -45,22 +50,29 @@ public class ApiRoomController {
                                        @RequestParam(defaultValue = "") String price,
                                        @RequestParam(defaultValue = "") String area,
                                        @RequestParam(defaultValue = "") String address,
-                                       @RequestParam(defaultValue = "") String roomType) {
+                                       @RequestParam(defaultValue = "") String roomType,
+                                       @RequestParam(defaultValue = "newest") String sort) {
         RoomFilterDataRequest filter = new RoomFilterDataRequest();
         filter.setPrice(price); filter.setArea(area); filter.setAddress(address); filter.setRoomType(roomType);
-        Page<Room> result = roomService.getAllRoomByManyContrains(filter, PageRequest.of(page, Math.min(size, 50)));
+        Page<Room> result = roomService.getAllRoomByManyContrains(filter,
+                PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, 50), roomSort(sort)));
         return new PageResponse<>(result.getContent().stream().map(RoomDTO::toDto).toList(),
                 result.getNumber(), result.getTotalPages(), result.getTotalElements());
     }
 
     @GetMapping("/{id}")
-    public RoomDetails room(@PathVariable long id) {
+    public RoomDetails room(@PathVariable long id, Authentication authentication) {
         RoomDTO room = roomService.getInforRoomByRoom_Id(Long.toString(id));
-        if (room == null) throw new IllegalArgumentException("Room not found");
+        if (room == null || !"true".equals(room.getIsApproval())) {
+            throw new IllegalArgumentException("Phòng không tồn tại hoặc chưa được duyệt");
+        }
         UserDTO owner = userService.getUserById(room.getUser_id());
+        boolean favorite = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> "Tenant".equals(authority.getAuthority()))
+                && favoriteService.isFavorite(authentication.getName(), id);
         return new RoomDetails(room, roomService.GetAllImageByRoom_Id(Long.toString(id)),
                 commentService.getAllCommentsByRoom_id(id),
-                new Owner(owner.getFullname(), owner.getTel(), owner.getLinkAvatar()));
+                new Owner(owner.getFullname(), owner.getTel(), owner.getLinkAvatar()), favorite);
     }
 
     @PostMapping("/{id}/comments")
@@ -74,7 +86,18 @@ public class ApiRoomController {
     }
 
     public record PageResponse<T>(List<T> content, int page, int totalPages, long totalElements) {}
-    public record RoomDetails(RoomDTO room, List<String> images, List<CommentDTO> comments, Owner owner) {}
+    public record RoomDetails(RoomDTO room, List<String> images, List<CommentDTO> comments, Owner owner,
+                              boolean favorite) {}
     public record Owner(String fullname, String tel, String avatar) {}
     public record CommentBody(@NotBlank String content) {}
+
+    private Sort roomSort(String value) {
+        return switch (value) {
+            case "newest" -> Sort.by(Sort.Direction.DESC, "createdAt");
+            case "priceAsc" -> Sort.by(Sort.Direction.ASC, "price");
+            case "priceDesc" -> Sort.by(Sort.Direction.DESC, "price");
+            case "areaDesc" -> Sort.by(Sort.Direction.DESC, "area");
+            default -> throw new IllegalArgumentException("Cách sắp xếp không hợp lệ");
+        };
+    }
 }

@@ -10,7 +10,6 @@ import com.example.Study.Respository.RoomRepository;
 import com.example.Study.Respository.UserRepository;
 import com.example.Study.Service.AppointmentService;
 import com.example.Study.entity.Appointment;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,12 +21,16 @@ import java.time.LocalDate;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
-    @Autowired
-    private AppointmentRepository appointmentRepository;
-    @Autowired
-    private RoomRepository roomRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final RoomRepository roomRepository;
+    private final UserRepository userRepository;
+
+    public AppointmentServiceImpl(AppointmentRepository appointmentRepository, RoomRepository roomRepository,
+                                  UserRepository userRepository) {
+        this.appointmentRepository = appointmentRepository;
+        this.roomRepository = roomRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     @Transactional
@@ -42,6 +45,9 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new IllegalArgumentException("Số người vượt quá sức chứa của phòng");
         }
         Date comeDate = validFutureDate(request.getComeDate());
+        if (appointmentRepository.existsSameBooking(request.getUsername(), roomId, comeDate)) {
+            throw new IllegalArgumentException("Bạn đã đặt lịch xem phòng này trong ngày đã chọn");
+        }
         var appointment = Appointment.builder()
                 .username(request.getUsername())
                 .room_id(roomId)
@@ -93,7 +99,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         if ("true".equals(appointment.getIsApproval())) {
             throw new IllegalArgumentException("Lịch hẹn đã duyệt không thể đổi ngày");
         }
-        appointmentRepository.updateAppointmentComeDate(appointmentId, validFutureDate(request.getComeDate()));
+        Date comeDate = validFutureDate(request.getComeDate());
+        if (appointmentRepository.existsOtherSameBooking(username, appointment.getRoom_id(), comeDate, appointmentId)) {
+            throw new IllegalArgumentException("Bạn đã đặt lịch xem phòng này trong ngày đã chọn");
+        }
+        appointmentRepository.updateAppointmentComeDate(appointmentId, comeDate);
         return new UpdateScheduleResponse(request.getAppointmentId());
     }
 

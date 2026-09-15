@@ -9,6 +9,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import LandlordRoomsPage from "./pages/LandlordRoomsPage";
 import AdminPage from "./pages/AdminPage";
+import FavoritesPage from "./pages/FavoritesPage";
 import RoleRoute from "./auth/RoleRoute";
 
 export default function App() {
@@ -20,6 +21,14 @@ export default function App() {
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
+        <Route
+          path="favorites"
+          element={
+            <RoleRoute roles={["Tenant"]}>
+              <FavoritesPage />
+            </RoleRoute>
+          }
+        />
         <Route
           path="account"
           element={

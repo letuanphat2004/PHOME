@@ -1,7 +1,9 @@
-import { ArrowUpRight, MapPin, Maximize2, Users } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowUpRight, Heart, MapPin, Maximize2, Users } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
-export default function RoomCard({ room, detailEnabled = true }) {
+export default function RoomCard({ room, detailEnabled = true, favorite = false, canFavorite = false, onToggleFavorite, favoritePending = false }) {
+  const location = useLocation();
+  const linkState = { from: `${location.pathname}${location.search}` };
   const image = (
     <>
       <img
@@ -14,7 +16,8 @@ export default function RoomCard({ room, detailEnabled = true }) {
   );
   return (
     <article className="room-card">
-      {detailEnabled ? <Link className="room-image-wrap" to={`/rooms/${room.room_id}`}>{image}</Link> : <div className="room-image-wrap">{image}</div>}
+      {canFavorite && <button className={favorite ? "card-favorite active" : "card-favorite"} type="button" aria-label={favorite ? "Bỏ khỏi yêu thích" : "Thêm vào yêu thích"} title={favorite ? "Bỏ khỏi yêu thích" : "Thêm vào yêu thích"} disabled={favoritePending} onClick={onToggleFavorite}><Heart /></button>}
+      {detailEnabled ? <Link className="room-image-wrap" to={`/rooms/${room.room_id}`} state={linkState}>{image}</Link> : <div className="room-image-wrap">{image}</div>}
       <div className="room-card-body">
         <div className="room-price">
           <strong>{room.price}</strong> triệu <span>/ tháng</span>
@@ -33,7 +36,7 @@ export default function RoomCard({ room, detailEnabled = true }) {
             Tối đa {room.capacity}
           </span>
         </div>
-        {detailEnabled && <Link className="room-link" to={`/rooms/${room.room_id}`}>Xem căn phòng <ArrowUpRight /></Link>}
+        {detailEnabled && <Link className="room-link" to={`/rooms/${room.room_id}`} state={linkState}>Xem căn phòng <ArrowUpRight /></Link>}
       </div>
     </article>
   );
