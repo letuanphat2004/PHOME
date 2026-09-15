@@ -23,7 +23,5 @@ public interface UserService {
 
     ChangePasswordResponse changePassword(ChangePasswordRequest request, String username);
 
-    CreateNewPasswordResponse createNewPassword(CreateNewPasswordRequest request);
-
     Page<UserDTO> getAllUserForAdmin(Pageable pageable);
 }

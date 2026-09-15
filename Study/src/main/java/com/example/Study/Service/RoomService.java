@@ -1,6 +1,7 @@
 package com.example.Study.Service;
 
 import com.example.Study.Model.DTO.RoomDTO;
+import com.example.Study.Model.DTO.ImageDTO;
 import com.example.Study.Model.Request.Room.RoomFilterDataRequest;
 import com.example.Study.entity.Room;
 import org.springframework.security.core.Authentication;
@@ -16,8 +17,10 @@ public interface RoomService {
     List<String> GetAllImageByRoom_Id(String room_id);
     void addRoom(RoomDTO roomDto, List<MultipartFile> images, Authentication auth);
     List<RoomDTO> getAllRoomByUser(String username);
-    void deleteRoomByRoomId(Long room_id);
+    void deleteRoomByRoomId(Long room_id, Authentication authentication);
     Page<Room> getRoomsByUser(String isApproval, String username, Pageable pageable);
+    RoomDTO getOwnedRoom(Long roomId, Authentication authentication);
+    List<ImageDTO> getOwnedRoomImages(Long roomId, Authentication authentication);
     void updateRoom(RoomDTO roomDto, Authentication auth, List<MultipartFile> imagesAdd, List<Long> imageIdsDel);
     Page<Room> getAllRoomsForAdmin(Pageable pageable);
     void approveRoom(Long roomId);

@@ -1,183 +1,185 @@
 package com.example.Study.Service.Impl;
 
-import com.example.Study.Common.*;
+import com.example.Study.Common.RoomType;
+import com.example.Study.Common.RoomTypeConverter;
+import com.example.Study.Model.DTO.ImageDTO;
 import com.example.Study.Model.DTO.RoomDTO;
 import com.example.Study.Model.Request.Room.RoomFilterDataRequest;
-import com.example.Study.Respository.*;
+import com.example.Study.Respository.AppointmentRepository;
+import com.example.Study.Respository.CommentRepository;
+import com.example.Study.Respository.ImageRepository;
+import com.example.Study.Respository.RoomRepository;
+import com.example.Study.Respository.UserRepository;
 import com.example.Study.Service.FileService;
 import com.example.Study.Service.RoomService;
 import com.example.Study.entity.Image;
 import com.example.Study.entity.Room;
 import com.example.Study.entity.User;
-import org.springframework.security.core.Authentication;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+
 @Service
 public class RoomServiceImpl implements RoomService {
-    @Autowired
-    private RoomRepository roomRepository;
+    private static final String APPROVED = "true";
+    private static final long MAX_IMAGE_SIZE = 8L * 1024 * 1024;
+    private static final int MAX_IMAGES = 8;
+    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/webp", "image/gif");
 
-    @Autowired
-    private FileService fileService;
+    private final RoomRepository roomRepository;
+    private final FileService fileService;
+    private final ImageRepository imageRepository;
+    private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final AppointmentRepository appointmentRepository;
 
-    @Autowired
-    private ImageRepository imageRepository;
+    public RoomServiceImpl(RoomRepository roomRepository, FileService fileService,
+                           ImageRepository imageRepository, UserRepository userRepository,
+                           CommentRepository commentRepository,
+                           AppointmentRepository appointmentRepository) {
+        this.roomRepository = roomRepository;
+        this.fileService = fileService;
+        this.imageRepository = imageRepository;
+        this.userRepository = userRepository;
+        this.commentRepository = commentRepository;
+        this.appointmentRepository = appointmentRepository;
+    }
 
-    private static final String isApproval = "true";
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private CommentRepository commentRepository;
-
-    @Autowired
-    private AppointmentRepository appointmentRepository;
     @Override
     public List<RoomDTO> getAllRoomByUser(String username) {
-        Optional<User> user = userRepository.findUserByUsername(username);
-        List<Room> rooms = roomRepository.findAllByUserid(user.get().getId());
-        List<RoomDTO> roomDtos = new ArrayList<>();
-        for (Room room : rooms) {
-            RoomDTO roomDto = RoomDTO.toDto(room);
-            roomDtos.add(roomDto);
-        }
-        return roomDtos;
-    }
-    @Override
-    public void deleteRoomByRoomId(Long room_id) {
-        imageRepository.deleteAllImagesByRoomId(room_id);
-        commentRepository.deleteCommentsByRoom_id(room_id);
-        appointmentRepository.deleteAppointmentByRoom_id(room_id);
-        roomRepository.deleteById(room_id);
-    }
-    @Override
-    public Page<Room> getRoomsByUser(String isApproval, String username, Pageable pageable) {
-        Optional<User> user = userRepository.findUserByUsername(username);
-        return roomRepository.getAllByUserId(isApproval, user.get().getId(), pageable);
+        User user = requiredUser(username);
+        return roomRepository.findAllByUserid(user.getId()).stream().map(RoomDTO::toDto).toList();
     }
 
-    @Modifying
+    @Override
     @Transactional
+    public void deleteRoomByRoomId(Long roomId, Authentication authentication) {
+        Room room = ownedRoom(roomId, authentication);
+        imageRepository.findAllImagesEntityByRoomId(roomId).forEach(image -> fileService.deleteFile(image.getUrl()));
+        imageRepository.deleteAllImagesByRoomId(roomId);
+        commentRepository.deleteCommentsByRoom_id(roomId);
+        appointmentRepository.deleteAppointmentByRoom_id(roomId);
+        roomRepository.delete(room);
+    }
+
     @Override
-    public void updateRoom(RoomDTO roomDto, Authentication auth, List<MultipartFile> imagesAdd, List<Long> imageIdsDel) {
-        Room room = RoomDTO.toRoom(roomDto);
+    public Page<Room> getRoomsByUser(String approval, String username, Pageable pageable) {
+        if (!"true".equals(approval) && !"false".equals(approval)) {
+            throw new IllegalArgumentException("Trạng thái phòng không hợp lệ");
+        }
+        return roomRepository.getAllByUserId(approval, requiredUser(username).getId(), pageable);
+    }
+
+    @Override
+    public RoomDTO getOwnedRoom(Long roomId, Authentication authentication) {
+        return RoomDTO.toDto(ownedRoom(roomId, authentication));
+    }
+
+    @Override
+    public List<ImageDTO> getOwnedRoomImages(Long roomId, Authentication authentication) {
+        ownedRoom(roomId, authentication);
+        return imageRepository.findAllImagesEntityByRoomId(roomId).stream().map(ImageDTO::toDto).toList();
+    }
+
+    @Override
+    @Transactional
+    public void updateRoom(RoomDTO roomDto, Authentication authentication,
+                           List<MultipartFile> imagesAdd, List<Long> imageIdsDel) {
+        Room room = ownedRoom(roomDto.getRoom_id(), authentication);
+        List<MultipartFile> uploads = validImages(imagesAdd, false);
+        List<Image> currentImages = imageRepository.findAllImagesEntityByRoomId(room.getId());
+        Set<Long> deleteIds = imageIdsDel == null ? Set.of() : new HashSet<>(imageIdsDel);
+        List<Image> imagesToDelete = currentImages.stream()
+                .filter(image -> deleteIds.contains(image.getId()))
+                .toList();
+
+        if (imagesToDelete.size() != deleteIds.size()) {
+            throw new AccessDeniedException("Có ảnh không thuộc căn phòng này");
+        }
+        if (currentImages.size() - imagesToDelete.size() + uploads.size() == 0) {
+            throw new IllegalArgumentException("Căn phòng phải có ít nhất một hình ảnh");
+        }
+        if (currentImages.size() - imagesToDelete.size() + uploads.size() > MAX_IMAGES) {
+            throw new IllegalArgumentException("Mỗi phòng được tải tối đa 8 hình ảnh");
+        }
+
+        room.setAddress(roomDto.getAddress().trim());
+        room.setCapacity(roomDto.getCapacity());
+        room.setPrice(roomDto.getPrice());
+        room.setDescription(roomDto.getDescription().trim());
+        room.setRoomType(parseRoomType(roomDto.getRoomType()));
+        room.setArea(roomDto.getArea());
         room.setIsApproval("false");
-        Room oldroom = roomRepository.findById(roomDto.getRoom_id()).orElse(null);
-        room.setId(roomDto.getRoom_id());
-        room.setCreatedAt(oldroom.getCreatedAt());
-        if (auth != null) {
-            String username = auth.getName();
-            Optional<User> user = userRepository.findUserByUsername(username);
-            room.setUser_id(user.get().getId());
+
+        imagesToDelete.forEach(image -> fileService.deleteFile(image.getUrl()));
+        imageRepository.deleteAll(imagesToDelete);
+        List<String> remainingUrls = currentImages.stream()
+                .filter(image -> !deleteIds.contains(image.getId()))
+                .map(Image::getUrl)
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+
+        for (MultipartFile file : uploads) {
+            String imageUrl = uploadImage(file);
+            imageRepository.save(Image.builder().room_id(room.getId()).url(imageUrl).build());
+            remainingUrls.add(imageUrl);
         }
 
-        commentRepository.deleteCommentsByRoom_id(roomDto.getRoom_id());
-        appointmentRepository.deleteAppointmentByRoom_id(roomDto.getRoom_id());
-
-        if (imageIdsDel != null) {
-            for (Long id : imageIdsDel) {
-                Optional<Image> image = imageRepository.findById(id);
-
-                // Sửa phần so sánh null trước khi gọi equals()
-                if (image.isPresent() && room.getImage() != null && room.getImage().equals(image.get().getUrl())) {
-                    room.setImage(""); // Nếu trùng, xóa ảnh
-                    break;
-                }
-            }
-            imageRepository.deleteAllById(imageIdsDel);
+        if (!remainingUrls.contains(room.getImage())) {
+            room.setImage(remainingUrls.get(0));
         }
-
-        if (imagesAdd != null && !imagesAdd.isEmpty()) {
-            for (MultipartFile file : imagesAdd) {
-                if (file.isEmpty()) {
-                    continue;
-                }
-                Image image = new Image();
-                image.setRoom_id(room.getId());
-                String imageUrl = fileService.uploadFile(file); // Upload file lên Cloudinary
-                image.setUrl(imageUrl);
-                imageRepository.save(image);
-            }
-        }
-
-        // Kiểm tra nếu room.getImage() là null hoặc rỗng và thiết lập ảnh đầu tiên từ imageRepository
-        if (room.getImage() == null || room.getImage().isEmpty()) {
-            List<String> images = imageRepository.findAllImagesByRoom_id(room.getId());
-
-            // Nếu có ít nhất một ảnh, gán ảnh đầu tiên cho room
-            if (!images.isEmpty()) {
-                room.setImage(images.get(0)); // Lưu ảnh vào room entity
-            }
-        }
-
         roomRepository.save(room);
     }
-
 
     @Override
     public Page<Room> getAllRoomByManyContrains(RoomFilterDataRequest request, Pageable pageable) {
-        Page<Room> roomPage;
-        if (request.isNull()) {
-            roomPage = roomRepository.findAllByIsApproval(isApproval, pageable);
-        } else {
-            RoomType roomType;
-            try {
-                roomType = RoomTypeConverter.convertToEntityAttributeGlobal(request.getRoomType());
-            } catch (Exception ex) {
-                roomType = null;
-            }
-            roomPage = roomRepository.findAllByFilterConstraints(request.getPrice(), request.getAddress(), request.getArea(), roomType, pageable);
+        if (request.isNull()) return roomRepository.findAllByIsApproval(APPROVED, pageable);
+        RoomType roomType;
+        try {
+            roomType = RoomTypeConverter.convertToEntityAttributeGlobal(request.getRoomType());
+        } catch (Exception exception) {
+            roomType = null;
         }
-        return roomPage;
+        return roomRepository.findAllByFilterConstraints(request.getPrice(), request.getAddress(),
+                request.getArea(), roomType, pageable);
     }
 
     @Override
-    public RoomDTO getInforRoomByRoom_Id(String room_id) {
-        return RoomDTO.toDto(roomRepository.findById(Long.parseLong(room_id)).orElse(null));
+    public RoomDTO getInforRoomByRoom_Id(String roomId) {
+        return RoomDTO.toDto(roomRepository.findById(Long.parseLong(roomId)).orElse(null));
     }
 
     @Override
-    public List<String> GetAllImageByRoom_Id(String room_id) {
-        return imageRepository.findAllImagesByRoom_id(Long.parseLong(room_id));
+    public List<String> GetAllImageByRoom_Id(String roomId) {
+        return imageRepository.findAllImagesByRoom_id(Long.parseLong(roomId));
     }
 
-    @Modifying
     @Override
     @Transactional
-    public void addRoom(RoomDTO roomDto, List<MultipartFile> images, Authentication auth) {
+    public void addRoom(RoomDTO roomDto, List<MultipartFile> images, Authentication authentication) {
+        List<MultipartFile> uploads = validImages(images, true);
+        User landlord = requiredUser(authentication.getName());
         Room room = RoomDTO.toRoom(roomDto);
+        room.setAddress(room.getAddress().trim());
+        room.setDescription(room.getDescription().trim());
+        room.setUser_id(landlord.getId());
         room.setIsApproval("false");
-        if (auth != null) {
-            String username = auth.getName();
-            Optional<User> user = userRepository.findUserByUsername(username);
-            room.setUser_id(user.get().getId());
-        }
 
-
-        room.setImage(fileService.uploadFile((MultipartFile) images.get(0)));//luu anh vao roomentity
+        List<String> urls = uploads.stream().map(this::uploadImage).toList();
+        room.setImage(urls.get(0));
         roomRepository.save(room);
-        Image roomImage = new Image();
-        roomImage.setRoom_id(room.getId());
-        roomImage.setUrl(room.getImage());
-        imageRepository.save(roomImage);
-        for (int i = 1; i < images.size(); i++) {//luu anh vao bang image
-            Image image = new Image();
-            image.setRoom_id(room.getId());
-            String imageUrl = fileService.uploadFile(images.get(i));
-            image.setUrl(imageUrl);
-            imageRepository.save(image);
-        }
-        roomRepository.save(room);
+        imageRepository.saveAll(urls.stream()
+                .map(url -> Image.builder().room_id(room.getId()).url(url).build())
+                .toList());
     }
 
     @Override
@@ -188,17 +190,73 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public void approveRoom(Long roomId) {
-        Room room = roomRepository.findById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
         room.setIsApproval("true");
         roomRepository.save(room);
     }
 
-    // Không duyệt phòng
     @Override
     @Transactional
     public void disapproveRoom(Long roomId) {
-        Room room = roomRepository.findById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
-        roomRepository.deleteById(roomId);
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
+        imageRepository.findAllImagesEntityByRoomId(roomId).forEach(image -> fileService.deleteFile(image.getUrl()));
+        imageRepository.deleteAllImagesByRoomId(roomId);
+        commentRepository.deleteCommentsByRoom_id(roomId);
+        appointmentRepository.deleteAppointmentByRoom_id(roomId);
+        roomRepository.delete(room);
     }
 
+    private Room ownedRoom(Long roomId, Authentication authentication) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
+        User user = requiredUser(authentication.getName());
+        if (room.getUser_id() != user.getId()) {
+            throw new AccessDeniedException("Bạn không sở hữu căn phòng này");
+        }
+        return room;
+    }
+
+    private User requiredUser(String username) {
+        return userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new AccessDeniedException("Không tìm thấy tài khoản"));
+    }
+
+    private List<MultipartFile> validImages(List<MultipartFile> images, boolean required) {
+        List<MultipartFile> files = images == null ? List.of() : images.stream()
+                .filter(file -> file != null && !file.isEmpty())
+                .toList();
+        if (required && files.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn ít nhất một hình ảnh");
+        }
+        if (files.size() > MAX_IMAGES) {
+            throw new IllegalArgumentException("Mỗi phòng được tải tối đa 8 hình ảnh");
+        }
+        for (MultipartFile file : files) {
+            if (file.getContentType() == null || !ALLOWED_IMAGE_TYPES.contains(file.getContentType().toLowerCase())) {
+                throw new IllegalArgumentException("Ảnh phải có định dạng JPG, PNG, WebP hoặc GIF");
+            }
+            if (file.getSize() > MAX_IMAGE_SIZE) {
+                throw new IllegalArgumentException("Mỗi hình ảnh không được vượt quá 8 MB");
+            }
+        }
+        return files;
+    }
+
+    private String uploadImage(MultipartFile file) {
+        String url = fileService.uploadFile(file);
+        if (url == null || url.isBlank()) {
+            throw new IllegalArgumentException("Không thể tải hình ảnh lên");
+        }
+        return url.replaceFirst("^http://", "https://");
+    }
+
+    private RoomType parseRoomType(String value) {
+        try {
+            return RoomType.valueOf(value);
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Loại phòng không hợp lệ");
+        }
+    }
 }

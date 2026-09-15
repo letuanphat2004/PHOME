@@ -60,18 +60,15 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional
     public ChangePasswordResponse changePassword(ChangePasswordRequest request, String username) {
         UserDetails userDetails = loadUserByUsername(username);
-        if (request.getPassword().equals(userDetails.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
             throw new InvalidParameterException("Wrong password");
+        }
+        if (request.getNewPassword() == null || request.getNewPassword().length() < 8
+                || !request.getNewPassword().matches("^(?=.*[a-zA-Z])(?=.*\\d).+$")) {
+            throw new InvalidParameterException("Password must be at least 8 characters and contain letters and numbers");
         }
         userRepository.updatePassword(passwordEncoder.encode(request.getNewPassword()), username);
         return new ChangePasswordResponse(username);
-    }
-
-    @Override
-    @Transactional
-    public CreateNewPasswordResponse createNewPassword(CreateNewPasswordRequest request) {
-        userRepository.updatePassword(passwordEncoder.encode(request.getNewPassword()), request.getUsername());
-        return new CreateNewPasswordResponse(request.getUsername());
     }
 
     @Override
@@ -86,16 +83,22 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Override
     @Transactional
     public RegisterResponse register(RegisterRequest registerRequest) {
-        User user1 = userRepository.findUserByUsername(registerRequest.getUsername()).orElse(null) ;
+        String username = registerRequest.getUsername().trim().toLowerCase();
+        User user1 = userRepository.findUserByUsername(username).orElse(null) ;
         if (user1 != null) throw new EntityExistsException("Account existed!");
 
+        long requestedRole = Long.parseLong(registerRequest.getRole_id());
+        if (requestedRole != 1L && requestedRole != 2L) {
+            throw new InvalidParameterException("Only Tenant or Landlord registration is allowed");
+        }
+
         var user = User.builder()
-                .username(registerRequest.getUsername().toLowerCase())
+                .username(username)
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .fullname(registerRequest.getFullname())
                 .email(registerRequest.getEmail())
                 .tel(registerRequest.getTel())
-                .role_id(Long.parseLong(registerRequest.getRole_id()))
+                .role_id(requestedRole)
                 .linkAvatar("https://res.cloudinary.com/hoaptit/image/upload/v1714322737/samples/people/bicycle.jpg")
                 .build();
         userRepository.save(user);

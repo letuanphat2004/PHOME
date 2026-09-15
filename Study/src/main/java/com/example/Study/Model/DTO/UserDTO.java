@@ -36,7 +36,6 @@ public class UserDTO {
                 .id(user.getId())
                 .email(user.getEmail())
                 .fullname(user.getFullname())
-                .password(user.getPassword())
                 .tel(user.getTel())
                 .role_id(user.getRole_id())
                 .username(user.getUsername())

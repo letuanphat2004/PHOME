@@ -32,14 +32,15 @@ public class AppointmentDTO {
 
     private long room_id;
 
+    private String roomAddress;
+
     private String isApproval;
 
     public static AppointmentDTO toDto(Appointment appointment) {
         if (appointment == null) {
             return null;
         }
-        String comeDate = appointment.getComeDate().getDate() +
-                "/" + (appointment.getComeDate().getMonth() + 1) + "/" + (appointment.getComeDate().getYear() + 1900);
+        String comeDate = new SimpleDateFormat("dd/MM/yyyy").format(appointment.getComeDate());
 
         return AppointmentDTO.builder()
                 .id(appointment.getId())

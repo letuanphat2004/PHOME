@@ -16,11 +16,11 @@ public interface AppointmentService {
 
     Page<Appointment> getAllByUsername(String username, Pageable pageable) throws ParseException;
 
-    DeleteScheduleResponse deleteScheduleById (Long scheduleId);
+    DeleteScheduleResponse deleteScheduleById (Long scheduleId, String username);
 
     Page<Appointment> getAppointmentsByUsername (String isApproval, String username, Pageable pageable);
 
-    void permitAppointment(long appointmentId);
+    void permitAppointment(long appointmentId, String landlordUsername);
 
-    UpdateScheduleResponse updateAppointment (UpdateScheduleRequest request);
+    UpdateScheduleResponse updateAppointment (UpdateScheduleRequest request, String username);
 }
