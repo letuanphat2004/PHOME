@@ -39,6 +39,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findUserByUsername(String username);
 
+    @Query("SELECT u FROM User u WHERE u.role_id = :roleId AND u.deleted = false")
+    List<User> findActiveByRoleId(@Param("roleId") long roleId);
+
     Page<User> findByUsernameContaining(String name, String tel, Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE (:name IS NULL OR u.username LIKE %:name%) AND (:tel IS NULL OR u.tel LIKE %:tel%)")

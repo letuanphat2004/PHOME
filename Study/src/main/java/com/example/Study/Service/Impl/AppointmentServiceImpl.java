@@ -10,6 +10,7 @@ import com.example.Study.Respository.AppointmentRepository;
 import com.example.Study.Respository.RoomRepository;
 import com.example.Study.Respository.UserRepository;
 import com.example.Study.Service.AppointmentService;
+import com.example.Study.Service.NotificationService;
 import com.example.Study.entity.Appointment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,12 +26,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
+    private final NotificationService notifications;
 
     public AppointmentServiceImpl(AppointmentRepository appointmentRepository, RoomRepository roomRepository,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository, NotificationService notifications) {
         this.appointmentRepository = appointmentRepository;
         this.roomRepository = roomRepository;
         this.userRepository = userRepository;
+        this.notifications = notifications;
     }
 
     @Override
@@ -61,6 +64,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .isApproval(BookingStatusEnum.PENDING.databaseValue())
                 .build();
         appointment = appointmentRepository.save(appointment);
+        notifications.notifyUser(room.getUser_id(), "APPOINTMENT_CREATED", "Yêu cầu xem phòng mới",
+                request.getFullname() + " muốn xem phòng tại " + room.getAddress() + " vào ngày " + request.getComeDate(),
+                "/appointments");
         return new AppointmentResponse(appointment.getId());
     }
 
@@ -89,6 +95,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = landlordAppointment(appointmentId, landlordUsername);
         requirePending(appointment);
         appointmentRepository.updateAppointmentStatus(appointmentId);
+        notifyTenantDecision(appointment, true);
     }
 
     @Override
@@ -97,6 +104,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = landlordAppointment(appointmentId, landlordUsername);
         requirePending(appointment);
         appointmentRepository.rejectAppointment(appointmentId);
+        notifyTenantDecision(appointment, false);
     }
 
     @Override
@@ -141,6 +149,16 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (!BookingStatusEnum.PENDING.databaseValue().equals(appointment.getIsApproval())) {
             throw new IllegalArgumentException("Yêu cầu xem phòng này đã được xử lý");
         }
+    }
+
+    private void notifyTenantDecision(Appointment appointment, boolean approved) {
+        var tenant = userRepository.findUserByUsername(appointment.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản người thuê"));
+        var room = roomRepository.findById(appointment.getRoom_id())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
+        notifications.notifyUser(tenant.getId(), approved ? "APPOINTMENT_APPROVED" : "APPOINTMENT_REJECTED",
+                approved ? "Lịch xem phòng đã được xác nhận" : "Yêu cầu xem phòng đã bị từ chối",
+                "Phòng tại " + room.getAddress() + " · " + appointment.getComeDate(), "/appointments");
     }
 
     private long parseRoomId(String value) {

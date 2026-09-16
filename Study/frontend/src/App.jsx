@@ -11,6 +11,7 @@ import LandlordRoomsPage from "./pages/LandlordRoomsPage";
 import AdminPage from "./pages/AdminPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import LandlordDashboardPage from "./pages/LandlordDashboardPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import RoleRoute from "./auth/RoleRoute";
 
 export default function App() {
@@ -27,6 +28,14 @@ export default function App() {
           element={
             <RoleRoute roles={["Tenant"]}>
               <FavoritesPage />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <RoleRoute>
+              <NotificationsPage />
             </RoleRoute>
           }
         />

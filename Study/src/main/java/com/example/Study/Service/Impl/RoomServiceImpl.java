@@ -11,6 +11,7 @@ import com.example.Study.Respository.ImageRepository;
 import com.example.Study.Respository.RoomRepository;
 import com.example.Study.Respository.UserRepository;
 import com.example.Study.Service.FileService;
+import com.example.Study.Service.NotificationService;
 import com.example.Study.Service.RoomService;
 import com.example.Study.entity.Image;
 import com.example.Study.entity.Room;
@@ -42,17 +43,20 @@ public class RoomServiceImpl implements RoomService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final AppointmentRepository appointmentRepository;
+    private final NotificationService notifications;
 
     public RoomServiceImpl(RoomRepository roomRepository, FileService fileService,
                            ImageRepository imageRepository, UserRepository userRepository,
                            CommentRepository commentRepository,
-                           AppointmentRepository appointmentRepository) {
+                           AppointmentRepository appointmentRepository,
+                           NotificationService notifications) {
         this.roomRepository = roomRepository;
         this.fileService = fileService;
         this.imageRepository = imageRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.appointmentRepository = appointmentRepository;
+        this.notifications = notifications;
     }
 
     @Override
@@ -139,6 +143,8 @@ public class RoomServiceImpl implements RoomService {
             room.setImage(remainingUrls.get(0));
         }
         roomRepository.save(room);
+        notifications.notifyRole(3L, "ROOM_SUBMITTED", "Phòng cần kiểm duyệt",
+                "Chủ nhà đã cập nhật phòng tại " + room.getAddress(), "/admin");
     }
 
     @Override
@@ -182,6 +188,8 @@ public class RoomServiceImpl implements RoomService {
         imageRepository.saveAll(urls.stream()
                 .map(url -> Image.builder().room_id(room.getId()).url(url).build())
                 .toList());
+        notifications.notifyRole(3L, "ROOM_SUBMITTED", "Phòng mới cần kiểm duyệt",
+                "Có phòng mới tại " + room.getAddress(), "/admin");
     }
 
     @Override
@@ -211,6 +219,8 @@ public class RoomServiceImpl implements RoomService {
         room.setIsApproval("true");
         room.setModerationNote(null);
         roomRepository.save(room);
+        notifications.notifyUser(room.getUser_id(), "ROOM_APPROVED", "Phòng đã được phê duyệt",
+                "Phòng tại " + room.getAddress() + " hiện đã được công khai.", "/my-rooms");
     }
 
     @Override
@@ -228,6 +238,8 @@ public class RoomServiceImpl implements RoomService {
         room.setIsApproval("rejected");
         room.setModerationNote(feedback);
         roomRepository.save(room);
+        notifications.notifyUser(room.getUser_id(), "ROOM_REJECTED", "Phòng cần chỉnh sửa",
+                "Phòng tại " + room.getAddress() + ": " + feedback, "/my-rooms");
     }
 
     private Room ownedRoom(Long roomId, Authentication authentication) {

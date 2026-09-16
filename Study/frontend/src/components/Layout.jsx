@@ -2,6 +2,7 @@ import { Building2, CalendarDays, Heart, House, LayoutDashboard, LogOut, Menu, U
 import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import NotificationBell from "./NotificationBell";
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
@@ -44,6 +45,7 @@ export default function Layout() {
                 <NavLink to="/appointments"><CalendarDays size={17} /> Lịch đã đặt</NavLink>
               </>}
               {user.role === "Admin" && <NavLink to="/admin"><LayoutDashboard size={17} /> Quản trị</NavLink>}
+              <NotificationBell user={user} />
               <NavLink to="/account">
                 <UserRound size={17} /> {user.username}
               </NavLink>

@@ -6,6 +6,7 @@ import com.example.Study.Respository.ImageRepository;
 import com.example.Study.Respository.RoomRepository;
 import com.example.Study.Respository.UserRepository;
 import com.example.Study.Service.FileService;
+import com.example.Study.Service.NotificationService;
 import com.example.Study.entity.Image;
 import com.example.Study.entity.Room;
 import com.example.Study.entity.User;
@@ -36,7 +37,7 @@ class RoomServiceImplTest {
         images = mock(ImageRepository.class);
         users = mock(UserRepository.class);
         service = new RoomServiceImpl(rooms, mock(FileService.class), images, users,
-                mock(CommentRepository.class), mock(AppointmentRepository.class));
+                mock(CommentRepository.class), mock(AppointmentRepository.class), mock(NotificationService.class));
         authentication = mock(Authentication.class);
         when(authentication.getName()).thenReturn("landlord");
     }
