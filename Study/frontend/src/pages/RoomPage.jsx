@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CalendarDays, Heart, MapPin, Maximize2, MessageCircle, Phone, Users, X } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, Pencil, Phone, Star, Trash2, Users, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { api, errorMessage } from "../api/client";
@@ -19,8 +19,12 @@ export default function RoomPage() {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [booking, setBooking] = useState(emptyBooking);
   const [selectedImage, setSelectedImage] = useState("");
+  const [reviewDraft, setReviewDraft] = useState({ rating: 5, content: "" });
+  const [editingReview, setEditingReview] = useState(false);
+  const [reviewPage, setReviewPage] = useState(0);
 
   const details = useQuery({ queryKey: ["room", id], queryFn: () => api.get(`/rooms/${id}`).then((response) => response.data) });
+  const reviews = useQuery({ queryKey: ["room-reviews", id, reviewPage], queryFn: () => api.get(`/rooms/${id}/reviews`, { params: { page: reviewPage, size: 5 } }).then((response) => response.data) });
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => api.get("/profile").then((response) => response.data), enabled: user?.role === "Tenant" });
   const addComment = useMutation({
     mutationFn: () => api.post(`/rooms/${id}/comments`, { content }),
@@ -39,6 +43,31 @@ export default function RoomPage() {
   const toggleFavorite = useMutation({
     mutationFn: (favorite) => favorite ? api.delete(`/favorites/${id}`) : api.post(`/favorites/${id}`),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["room", id] }); queryClient.invalidateQueries({ queryKey: ["favorites"] }); },
+    onError: (error) => setNotice({ type: "error", text: errorMessage(error) }),
+  });
+  const saveReview = useMutation({
+    mutationFn: () => reviews.data?.mine
+      ? api.put(`/rooms/${id}/reviews/mine`, reviewDraft)
+      : api.post(`/rooms/${id}/reviews`, reviewDraft),
+    onSuccess: () => {
+      setEditingReview(false);
+      setReviewPage(0);
+      setReviewDraft({ rating: 5, content: "" });
+      setNotice({ type: "success", text: "Đánh giá của bạn đã được lưu." });
+      queryClient.invalidateQueries({ queryKey: ["room-reviews", id] });
+      queryClient.invalidateQueries({ queryKey: ["notification-count"] });
+    },
+    onError: (error) => setNotice({ type: "error", text: errorMessage(error) }),
+  });
+  const deleteReview = useMutation({
+    mutationFn: () => api.delete(`/rooms/${id}/reviews/mine`),
+    onSuccess: () => {
+      setEditingReview(false);
+      setReviewPage(0);
+      setReviewDraft({ rating: 5, content: "" });
+      setNotice({ type: "success", text: "Đã xóa đánh giá của bạn." });
+      queryClient.invalidateQueries({ queryKey: ["room-reviews", id] });
+    },
     onError: (error) => setNotice({ type: "error", text: errorMessage(error) }),
   });
 
@@ -68,6 +97,23 @@ export default function RoomPage() {
         </div>
         <div className="detail-meta"><span><MapPin /> {room.address}</span><span><Maximize2 /> {room.area} m²</span><span><Users /> Tối đa {room.capacity} người</span></div>
         <div className="description"><h2>Về căn phòng này</h2><p>{room.description}</p></div>
+        <div className="reviews-section">
+          <div className="review-heading"><div><h2><Star /> Đánh giá phòng</h2><p>Trải nghiệm thực tế từ những người thuê đã được xác nhận.</p></div>{reviews.data && <div className="rating-summary"><strong>{reviews.data.averageRating.toFixed(1)}</strong><span><Stars value={Math.round(reviews.data.averageRating)} /></span><small>{reviews.data.totalElements} đánh giá</small></div>}</div>
+          {reviews.isLoading ? <p className="muted">Đang tải đánh giá…</p> : reviews.isError ? <p className="form-error">{errorMessage(reviews.error)}</p> : <>
+            {user?.role === "Tenant" && reviews.data.eligible && (!reviews.data.mine || editingReview) && <form className="review-form" onSubmit={(event) => { event.preventDefault(); setNotice(null); saveReview.mutate(); }}>
+              <strong>{reviews.data.mine ? "Chỉnh sửa đánh giá" : "Chia sẻ trải nghiệm của bạn"}</strong>
+              <div className="rating-input" aria-label={`${reviewDraft.rating} sao`}>{[1, 2, 3, 4, 5].map((value) => <button type="button" key={value} className={value <= reviewDraft.rating ? "active" : ""} onClick={() => setReviewDraft({ ...reviewDraft, rating: value })} aria-label={`${value} sao`}><Star /></button>)}</div>
+              <textarea required maxLength="1000" value={reviewDraft.content} onChange={(event) => setReviewDraft({ ...reviewDraft, content: event.target.value })} placeholder="Phòng ở thực tế thế nào? Chủ nhà hỗ trợ ra sao?" />
+              <div className="review-form-actions">{reviews.data.mine && <button type="button" className="button secondary" onClick={() => setEditingReview(false)}>Hủy</button>}<button className="button" disabled={saveReview.isPending}>{saveReview.isPending ? "Đang lưu…" : "Lưu đánh giá"}</button></div>
+            </form>}
+            {user?.role === "Tenant" && !reviews.data.eligible && !reviews.data.mine && <p className="review-eligibility">Bạn có thể đánh giá sau khi chủ nhà xác nhận lịch xem phòng.</p>}
+            <div className="review-list">{reviews.data.content.length === 0 ? <p className="muted">Chưa có đánh giá nào cho căn phòng này.</p> : reviews.data.content.map((review) => <article key={review.id}>
+              {review.avatar ? <img src={review.avatar} alt="" /> : <span className="comment-avatar">{review.author?.[0]?.toUpperCase()}</span>}
+              <div><div className="review-author"><strong>{review.author}{review.mine && <small>Đánh giá của bạn</small>}</strong><Stars value={review.rating} /></div><time>{formatReviewDate(review.updatedAt)}</time><p>{review.content}</p>{review.mine && !editingReview && <div className="review-actions"><button onClick={() => { setReviewDraft({ rating: review.rating, content: review.content }); setEditingReview(true); }}><Pencil /> Sửa</button><button className="danger" disabled={deleteReview.isPending} onClick={() => deleteReview.mutate()}><Trash2 /> Xóa</button></div>}</div>
+            </article>)}</div>
+            {reviews.data.totalPages > 1 && <div className="pagination"><button disabled={reviewPage === 0} onClick={() => setReviewPage((value) => value - 1)}><ChevronLeft /> Trước</button><span>Trang {reviewPage + 1}/{reviews.data.totalPages}</span><button disabled={reviewPage + 1 >= reviews.data.totalPages} onClick={() => setReviewPage((value) => value + 1)}>Sau <ChevronRight /></button></div>}
+          </>}
+        </div>
         <div className="comments">
           <h2><MessageCircle /> Trao đổi ({comments.length})</h2>
           {user ? <form onSubmit={(event) => { event.preventDefault(); setCommentError(""); addComment.mutate(); }}>
@@ -105,4 +151,12 @@ export default function RoomPage() {
       </section>
     </div>}
   </div>;
+}
+
+function Stars({ value }) {
+  return <span className="stars" aria-label={`${value} trên 5 sao`}>{[1, 2, 3, 4, 5].map((star) => <Star key={star} className={star <= value ? "filled" : ""} />)}</span>;
+}
+
+function formatReviewDate(value) {
+  return new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" }).format(new Date(value));
 }

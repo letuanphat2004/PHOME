@@ -28,6 +28,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                                    @Param("comeDate") Date comeDate,
                                    @Param("appointmentId") long appointmentId);
 
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.username = :username " +
+            "AND a.room_id = :roomId AND a.isApproval = 'true'")
+    boolean existsApprovedVisit(@Param("username") String username, @Param("roomId") long roomId);
+
     @Query("SELECT a FROM Appointment AS a " +
             "INNER JOIN Room as r " +
             "ON r.id = a.room_id " +
