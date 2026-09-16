@@ -32,6 +32,9 @@ $env:CLOUDINARY_API_KEY = "your-api-key"
 $env:CLOUDINARY_API_SECRET = "your-api-secret"
 ```
 
+Không lưu mật khẩu thật trong Git. Môi trường production bắt buộc cung cấp `DB_URL`,
+`DB_USERNAME` và `DB_PASSWORD`. Khi chạy sau HTTPS, đặt `SESSION_COOKIE_SECURE=true`.
+
 Các khóa từng được lưu trực tiếp trong mã nguồn cần được đổi tại MySQL, Gmail và Cloudinary.
 
 ## Chạy phát triển
@@ -62,6 +65,24 @@ cd ..
 ```
 
 Mở `http://localhost:8080`.
+
+Health check của ứng dụng có tại `http://localhost:8080/actuator/health`.
+
+## Chạy bằng Docker
+
+Tạo file `.env` từ `.env.example`, đặt ít nhất `MYSQL_ROOT_PASSWORD`, sau đó chạy:
+
+```powershell
+docker compose up --build -d
+docker compose ps
+```
+
+Compose khởi động MySQL 8.4, chờ database sẵn sàng rồi chạy PHOME với profile `prod`.
+Dữ liệu MySQL và ảnh tải lên được lưu trong các volume `phome_mysql_data` và `phome_uploads`.
+Để triển khai sau reverse proxy HTTPS,
+đặt `SESSION_COOKIE_SECURE=true` và không công khai trực tiếp cổng MySQL.
+
+Pipeline `.github/workflows/ci.yml` tự động chạy lint, build React và kiểm thử backend trên mỗi push hoặc pull request.
 
 Nếu chưa cấu hình MySQL, có thể chạy thử với H2 tạm:
 

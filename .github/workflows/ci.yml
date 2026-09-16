@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Study
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Study/frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: Study/frontend
+      - name: Lint frontend
+        run: npm run lint
+        working-directory: Study/frontend
+      - name: Build frontend
+        run: npm run build
+        working-directory: Study/frontend
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Test backend
+        run: ./mvnw -q test

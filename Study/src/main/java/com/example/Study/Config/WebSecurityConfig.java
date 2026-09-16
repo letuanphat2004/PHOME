@@ -61,6 +61,7 @@ public class WebSecurityConfig {
                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                 .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/csrf",
                                  "/api/v1/auth/password/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/rooms", "/api/v1/rooms/**").permitAll()
                 .requestMatchers("/api/v1/admin/**").hasAuthority("Admin")
                 .requestMatchers("/api/v1/**").authenticated()
