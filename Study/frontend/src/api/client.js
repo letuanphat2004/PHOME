@@ -3,10 +3,32 @@ import axios from "axios";
 export const api = axios.create({ baseURL: "/api/v1", withCredentials: true });
 
 let csrfToken;
+let csrfRequest;
+let unauthorizedHandler;
+
+export function resetCsrfToken() {
+  csrfToken = undefined;
+  csrfRequest = undefined;
+}
+
+export function setUnauthorizedHandler(handler) {
+  unauthorizedHandler = handler;
+  return () => {
+    if (unauthorizedHandler === handler) unauthorizedHandler = undefined;
+  };
+}
+
 export async function ensureCsrf() {
   if (!csrfToken) {
-    const { data } = await api.get("/auth/csrf");
-    csrfToken = data.token;
+    csrfRequest ??= api.get("/auth/csrf")
+      .then(({ data }) => {
+        csrfToken = data.token;
+        return csrfToken;
+      })
+      .finally(() => {
+        csrfRequest = undefined;
+      });
+    return csrfRequest;
   }
   return csrfToken;
 }
@@ -30,9 +52,15 @@ api.interceptors.response.use(
 
     if (error.response?.status === 403 && isMutation && !config._csrfRetried) {
       config._csrfRetried = true;
-      csrfToken = undefined;
+      resetCsrfToken();
       config.headers["X-XSRF-TOKEN"] = await ensureCsrf();
       return api.request(config);
+    }
+
+    const isAuthCheck = ["/auth/login", "/auth/me"].includes(config?.url);
+    if (error.response?.status === 401 && !isAuthCheck) {
+      resetCsrfToken();
+      unauthorizedHandler?.();
     }
 
     return Promise.reject(error);

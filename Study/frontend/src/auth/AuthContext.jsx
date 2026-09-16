@@ -1,11 +1,16 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../api/client";
+import { api, resetCsrfToken, setUnauthorizedHandler } from "../api/client";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const queryClient = useQueryClient();
+  useEffect(() => setUnauthorizedHandler(() => {
+    queryClient.clear();
+    queryClient.setQueryData(["current-user"], null);
+  }), [queryClient]);
+
   const { data: user, isLoading } = useQuery({
     queryKey: ["current-user"],
     queryFn: () => api.get("/auth/me").then((r) => r.data),
@@ -13,11 +18,19 @@ export function AuthProvider({ children }) {
   });
   const login = async (credentials) => {
     const { data } = await api.post("/auth/login", credentials);
+    resetCsrfToken();
+    queryClient.clear();
     queryClient.setQueryData(["current-user"], data);
     return data;
   };
   const logout = async () => {
-    await api.post("/auth/logout");
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      // Local auth state still needs to be cleared when the server session expired.
+    }
+    resetCsrfToken();
+    queryClient.clear();
     queryClient.setQueryData(["current-user"], null);
   };
   return (
