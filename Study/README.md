@@ -90,7 +90,9 @@ Nếu chưa cấu hình MySQL, có thể chạy thử với H2 tạm:
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=demo"
 ```
 
-Tài khoản mẫu dùng chung mật khẩu `Demo1234`: `tenant`, `landlord`, `admin`.
+Tài khoản MySQL mẫu dùng chung mật khẩu `Demo1234`: `tenant_demo`, `landlord_demo`,
+`admin_demo`. Migration `V9__seed_rich_demo_catalog.sql` bổ sung 32 phòng thuộc
+`landlord_demo`, gồm phòng đã duyệt, chờ duyệt và bị từ chối để kiểm thử đầy đủ các luồng.
 
 ## Flyway
 
