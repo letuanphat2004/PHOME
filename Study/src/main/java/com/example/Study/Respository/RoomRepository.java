@@ -15,6 +15,8 @@ import java.util.List;
 public interface RoomRepository extends JpaRepository<Room, Long> {
     Page<Room> findAllByIsApproval(String isApproval, Pageable pageable);
 
+    long countByIsApproval(String isApproval);
+
     @Query("SELECT COUNT(r) FROM Room r WHERE r.user_id = :userId AND r.isApproval = :isApproval")
     long countByUserIdAndIsApproval(@Param("userId") long userId,
                                     @Param("isApproval") String isApproval);

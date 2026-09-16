@@ -35,6 +35,7 @@ public class RoomDTO {
     @DecimalMin("1.0")
     private double area;
     private String isApproval;
+    private String moderationNote;
     private String image;
 
     public static RoomDTO toDto(Room room) {
@@ -43,14 +44,16 @@ public class RoomDTO {
                 .room_id(room.getId()).user_id(room.getUser_id()).address(room.getAddress())
                 .capacity(room.getCapacity()).price(room.getPrice()).description(room.getDescription())
                 .roomType(room.getRoomType() == RoomType.CHUNG_CHU ? "Chung chủ" : "Không chung chủ")
-                .area(room.getArea()).isApproval(room.getIsApproval()).image(room.getImage()).build();
+                .area(room.getArea()).isApproval(room.getIsApproval())
+                .moderationNote(room.getModerationNote()).image(room.getImage()).build();
     }
 
     public static Room toRoom(RoomDTO room) {
         if (room == null) return null;
         return Room.builder().user_id(room.user_id).address(room.address).capacity(room.capacity)
                 .price(room.price).description(room.description).roomType(parseRoomType(room.roomType))
-                .area(room.area).isApproval(room.isApproval).image(room.image).build();
+                .area(room.area).isApproval(room.isApproval)
+                .moderationNote(room.moderationNote).image(room.image).build();
     }
 
     private static RoomType parseRoomType(String value) {

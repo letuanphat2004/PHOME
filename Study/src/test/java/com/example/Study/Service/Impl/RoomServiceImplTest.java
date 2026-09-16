@@ -19,6 +19,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class RoomServiceImplTest {
@@ -61,6 +63,31 @@ class RoomServiceImplTest {
 
         assertThrows(AccessDeniedException.class,
                 () -> service.updateRoom(nullRoomDto(10L), authentication, List.of(), List.of(99L)));
+    }
+
+    @Test
+    void adminRejectionKeepsRoomAndStoresFeedback() {
+        Room room = room(10L, 1L);
+        room.setIsApproval("false");
+        when(rooms.findById(10L)).thenReturn(Optional.of(room));
+
+        service.rejectRoom(10L, "Cần bổ sung ảnh khu vực bếp");
+
+        verify(rooms).save(room);
+        org.junit.jupiter.api.Assertions.assertEquals("rejected", room.getIsApproval());
+        org.junit.jupiter.api.Assertions.assertEquals("Cần bổ sung ảnh khu vực bếp", room.getModerationNote());
+        verify(rooms, never()).delete(room);
+    }
+
+    @Test
+    void adminCannotApproveRoomThatIsNotPending() {
+        Room room = room(10L, 1L);
+        room.setIsApproval("rejected");
+        when(rooms.findById(10L)).thenReturn(Optional.of(room));
+
+        assertThrows(IllegalArgumentException.class, () -> service.approveRoom(10L));
+
+        verify(rooms, never()).save(room);
     }
 
     private Room room(long id, long userId) {

@@ -24,4 +24,6 @@ public interface UserService {
     ChangePasswordResponse changePassword(ChangePasswordRequest request, String username);
 
     Page<UserDTO> getAllUserForAdmin(Pageable pageable);
+
+    void setAccountEnabled(long userId, boolean enabled, String adminUsername);
 }

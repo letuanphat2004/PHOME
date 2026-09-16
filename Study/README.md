@@ -96,7 +96,7 @@ Không sửa migration đã chạy trên database dùng chung.
 - `/api/v1/appointments`: đặt và quản lý lịch xem phòng
 - `/api/v1/landlord/dashboard`: số liệu tổng quan dành cho chủ nhà
 - `/api/v1/landlord/rooms`: đăng, chỉnh sửa và quản lý phòng của chủ nhà
-- `/api/v1/admin`: quản lý phòng và người dùng
+- `/api/v1/admin`: dashboard, kiểm duyệt phòng và quản lý trạng thái người dùng
 
 ## Kiểm tra
 

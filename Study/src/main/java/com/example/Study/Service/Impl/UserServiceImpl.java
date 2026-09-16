@@ -82,6 +82,18 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Override
     @Transactional
+    public void setAccountEnabled(long userId, boolean enabled, String adminUsername) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng"));
+        if (user.getUsername().equals(adminUsername) || user.getRole_id() == 3L) {
+            throw new IllegalArgumentException("Không thể thay đổi trạng thái tài khoản quản trị viên");
+        }
+        user.setDeleted(!enabled);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
     public RegisterResponse register(RegisterRequest registerRequest) {
         String username = registerRequest.getUsername().trim().toLowerCase();
         User user1 = userRepository.findUserByUsername(username).orElse(null) ;

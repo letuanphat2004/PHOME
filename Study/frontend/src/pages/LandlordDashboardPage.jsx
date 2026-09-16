@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Building2, CalendarCheck2, CalendarClock, CheckCircle2, Clock3, RefreshCw } from "lucide-react";
+import { Ban, Building2, CalendarCheck2, CalendarClock, CheckCircle2, Clock3, RefreshCw } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 import { api, errorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -29,6 +29,7 @@ export default function LandlordDashboardPage() {
         <section className="overview-grid" aria-label="Tổng quan hoạt động">
           <Stat icon={<Building2 />} value={dashboard.data.approvedRooms} label="Phòng đang hiển thị" />
           <Stat icon={<Clock3 />} value={dashboard.data.pendingRooms} label="Phòng chờ duyệt" />
+          <Stat icon={<Ban />} value={dashboard.data.rejectedRooms} label="Phòng cần chỉnh sửa" urgent={dashboard.data.rejectedRooms > 0} />
           <Stat icon={<CalendarClock />} value={dashboard.data.pendingAppointments} label="Yêu cầu cần xử lý" urgent={dashboard.data.pendingAppointments > 0} />
           <Stat icon={<CalendarCheck2 />} value={dashboard.data.upcomingAppointments} label="Lịch sắp diễn ra" />
         </section>

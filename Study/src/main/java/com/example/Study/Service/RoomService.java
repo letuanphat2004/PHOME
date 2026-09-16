@@ -23,8 +23,9 @@ public interface RoomService {
     List<ImageDTO> getOwnedRoomImages(Long roomId, Authentication authentication);
     void updateRoom(RoomDTO roomDto, Authentication auth, List<MultipartFile> imagesAdd, List<Long> imageIdsDel);
     Page<Room> getAllRoomsForAdmin(Pageable pageable);
+    Page<Room> getRoomsForAdmin(String status, Pageable pageable);
     void approveRoom(Long roomId);
-    void disapproveRoom(Long roomId);
+    void rejectRoom(Long roomId, String reason);
 
 
 }

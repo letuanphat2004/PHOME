@@ -33,6 +33,7 @@ public class LandlordDashboardServiceImpl implements LandlordDashboardService {
         return new LandlordDashboardDTO(
                 rooms.countByUserIdAndIsApproval(landlordId, "true"),
                 rooms.countByUserIdAndIsApproval(landlordId, "false"),
+                rooms.countByUserIdAndIsApproval(landlordId, "rejected"),
                 appointments.countByLandlordAndStatus(username, BookingStatusEnum.PENDING.databaseValue()),
                 appointments.countByLandlordAndStatus(username, BookingStatusEnum.APPROVED.databaseValue()),
                 appointments.countByLandlordAndStatus(username, BookingStatusEnum.REJECTED.databaseValue()),

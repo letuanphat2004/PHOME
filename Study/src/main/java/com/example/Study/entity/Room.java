@@ -39,6 +39,9 @@ public class Room extends BaseEntity {
 
     private String isApproval;
 
+    @Size(max = 500)
+    private String moderationNote;
+
     private String image;
 
 }

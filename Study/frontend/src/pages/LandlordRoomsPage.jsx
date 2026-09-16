@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Clock3, ImagePlus, Pencil, Plus, RefreshCw, Trash2, X } from "lucide-react";
+import { Ban, CheckCircle2, Clock3, ImagePlus, Pencil, Plus, RefreshCw, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { api, errorMessage } from "../api/client";
@@ -17,7 +17,8 @@ export default function LandlordRoomsPage() {
   const [notice, setNotice] = useState(null);
   const approvedQuery = useQuery({ queryKey: ["my-rooms", "true"], queryFn: () => queryRooms("true"), enabled: user?.role === "Landlord" });
   const pendingQuery = useQuery({ queryKey: ["my-rooms", "false"], queryFn: () => queryRooms("false"), enabled: user?.role === "Landlord" });
-  const currentQuery = tab === "true" ? approvedQuery : pendingQuery;
+  const rejectedQuery = useQuery({ queryKey: ["my-rooms", "rejected"], queryFn: () => queryRooms("rejected"), enabled: user?.role === "Landlord" });
+  const currentQuery = tab === "true" ? approvedQuery : tab === "false" ? pendingQuery : rejectedQuery;
 
   const loadEditor = useMutation({
     mutationFn: (id) => api.get(`/landlord/rooms/${id}`).then((response) => response.data),
@@ -29,6 +30,7 @@ export default function LandlordRoomsPage() {
     onSuccess: () => {
       setNotice({ type: "success", text: "Đã xóa phòng và các lịch hẹn liên quan." });
       queryClient.invalidateQueries({ queryKey: ["my-rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["landlord-dashboard"] });
     },
     onError: (error) => setNotice({ type: "error", text: errorMessage(error) }),
   });
@@ -54,12 +56,14 @@ export default function LandlordRoomsPage() {
       <div className="landlord-stats" aria-label="Tổng quan phòng">
         <article><CheckCircle2 /><div><strong>{approvedQuery.data?.length ?? 0}</strong><span>Đang hiển thị</span></div></article>
         <article><Clock3 /><div><strong>{pendingQuery.data?.length ?? 0}</strong><span>Chờ xét duyệt</span></div></article>
+        <article><Ban /><div><strong>{rejectedQuery.data?.length ?? 0}</strong><span>Cần chỉnh sửa</span></div></article>
       </div>
       {notice && <div className={`notice ${notice.type}`}>{notice.text}</div>}
       {loadEditor.isPending && <div className="notice">Đang tải thông tin phòng…</div>}
       <div className="tabs" role="tablist" aria-label="Trạng thái phòng">
         <button className={tab === "true" ? "active" : ""} onClick={() => setTab("true")}>Đang hiển thị</button>
         <button className={tab === "false" ? "active" : ""} onClick={() => setTab("false")}>Chờ duyệt</button>
+        <button className={tab === "rejected" ? "active" : ""} onClick={() => setTab("rejected")}>Cần chỉnh sửa</button>
       </div>
       {currentQuery.isLoading ? (
         <div className="state-card">Đang tải danh sách phòng…</div>
@@ -67,17 +71,18 @@ export default function LandlordRoomsPage() {
         <div className="state-card error-state"><p>{errorMessage(currentQuery.error)}</p><button className="button secondary" onClick={() => currentQuery.refetch()}><RefreshCw /> Thử lại</button></div>
       ) : currentQuery.data.length === 0 ? (
         <div className="empty empty-card">
-          {tab === "true" ? <CheckCircle2 /> : <Clock3 />}
-          <h2>{tab === "true" ? "Chưa có phòng đang hiển thị" : "Không có phòng chờ duyệt"}</h2>
-          <p>{tab === "true" ? "Đăng phòng đầu tiên để bắt đầu tiếp cận người thuê." : "Các phòng mới hoặc vừa chỉnh sửa sẽ xuất hiện tại đây."}</p>
+          {tab === "true" ? <CheckCircle2 /> : tab === "false" ? <Clock3 /> : <Ban />}
+          <h2>{tab === "true" ? "Chưa có phòng đang hiển thị" : tab === "false" ? "Không có phòng chờ duyệt" : "Không có phòng cần chỉnh sửa"}</h2>
+          <p>{tab === "true" ? "Đăng phòng đầu tiên để bắt đầu tiếp cận người thuê." : tab === "false" ? "Các phòng mới hoặc vừa chỉnh sửa sẽ xuất hiện tại đây." : "Phản hồi từ quản trị viên sẽ xuất hiện tại đây."}</p>
           {tab === "true" && <button className="button" onClick={openNew}><Plus /> Đăng phòng</button>}
         </div>
       ) : (
         <div className="room-grid management">
           {currentQuery.data.map((room) => (
             <div className="managed-room" key={room.room_id}>
-              <div className="managed-status">{tab === "true" ? "Đang hiển thị" : "Chờ duyệt"}</div>
+              <div className={`managed-status ${tab === "rejected" ? "rejected" : ""}`}>{tab === "true" ? "Đang hiển thị" : tab === "false" ? "Chờ duyệt" : "Cần chỉnh sửa"}</div>
               <RoomCard room={room} detailEnabled={tab === "true"} />
+              {tab === "rejected" && <div className="moderation-feedback"><strong>Phản hồi duyệt phòng</strong><p>{room.moderationNote}</p></div>}
               <div className="room-actions">
                 <button onClick={() => openEdit(room.room_id)} disabled={loadEditor.isPending}><Pencil /> Chỉnh sửa</button>
                 <button onClick={() => deleteRoom(room)} disabled={remove.isPending}><Trash2 /> Xóa</button>
@@ -90,6 +95,7 @@ export default function LandlordRoomsPage() {
         setEditor(null); setTab("false");
         setNotice({ type: "success", text: editing ? "Đã lưu thay đổi và gửi phòng xét duyệt lại." : "Đã đăng phòng và gửi xét duyệt." });
         queryClient.invalidateQueries({ queryKey: ["my-rooms"] });
+        queryClient.invalidateQueries({ queryKey: ["landlord-dashboard"] });
       }} />}
     </div>
   );

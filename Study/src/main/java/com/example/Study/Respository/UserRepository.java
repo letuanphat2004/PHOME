@@ -15,6 +15,10 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+    long countByDeleted(boolean deleted);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role_id = :roleId")
+    long countByRoleId(@Param("roleId") long roleId);
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.fullname = :fullname,u.tel = :tel WHERE u.username = :username")

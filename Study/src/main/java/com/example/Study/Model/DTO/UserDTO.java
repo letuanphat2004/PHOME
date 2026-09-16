@@ -28,6 +28,8 @@ public class UserDTO {
 
     private String linkAvatar;
 
+    private boolean disabled;
+
     public static UserDTO toDto(User user) {
         if (user == null) {
             return null;
@@ -40,6 +42,7 @@ public class UserDTO {
                 .role_id(user.getRole_id())
                 .username(user.getUsername())
                 .linkAvatar(user.getLinkAvatar())
+                .disabled(user.isDeleted())
                 .build();
     }
 
@@ -47,7 +50,7 @@ public class UserDTO {
         if (user == null) {
             return null;
         }
-        return User.builder()
+        User entity = User.builder()
                 .email(user.getEmail())
                 .fullname(user.getFullname())
                 .password(user.getPassword())
@@ -56,6 +59,8 @@ public class UserDTO {
                 .username(user.getUsername())
                 .linkAvatar(user.getLinkAvatar())
                 .build();
+        entity.setDeleted(user.isDisabled());
+        return entity;
     }
 
     public static List<UserDTO> toDto(List<User> users) {

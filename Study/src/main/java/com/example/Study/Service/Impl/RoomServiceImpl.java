@@ -74,7 +74,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public Page<Room> getRoomsByUser(String approval, String username, Pageable pageable) {
-        if (!"true".equals(approval) && !"false".equals(approval)) {
+        if (!"true".equals(approval) && !"false".equals(approval) && !"rejected".equals(approval)) {
             throw new IllegalArgumentException("Trạng thái phòng không hợp lệ");
         }
         return roomRepository.getAllByUserId(approval, requiredUser(username).getId(), pageable);
@@ -120,6 +120,7 @@ public class RoomServiceImpl implements RoomService {
         room.setRoomType(parseRoomType(roomDto.getRoomType()));
         room.setArea(roomDto.getArea());
         room.setIsApproval("false");
+        room.setModerationNote(null);
 
         imagesToDelete.forEach(image -> fileService.deleteFile(image.getUrl()));
         imageRepository.deleteAll(imagesToDelete);
@@ -173,6 +174,7 @@ public class RoomServiceImpl implements RoomService {
         room.setDescription(room.getDescription().trim());
         room.setUser_id(landlord.getId());
         room.setIsApproval("false");
+        room.setModerationNote(null);
 
         List<String> urls = uploads.stream().map(this::uploadImage).toList();
         room.setImage(urls.get(0));
@@ -188,24 +190,44 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public Page<Room> getRoomsForAdmin(String status, Pageable pageable) {
+        String databaseStatus = switch (status == null ? "" : status.trim().toLowerCase()) {
+            case "pending", "false" -> "false";
+            case "approved", "true" -> "true";
+            case "rejected" -> "rejected";
+            default -> throw new IllegalArgumentException("Trạng thái phòng không hợp lệ");
+        };
+        return roomRepository.findAllByIsApproval(databaseStatus, pageable);
+    }
+
+    @Override
     @Transactional
     public void approveRoom(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
+        if (!"false".equals(room.getIsApproval())) {
+            throw new IllegalArgumentException("Chỉ phòng đang chờ duyệt mới có thể được phê duyệt");
+        }
         room.setIsApproval("true");
+        room.setModerationNote(null);
         roomRepository.save(room);
     }
 
     @Override
     @Transactional
-    public void disapproveRoom(Long roomId) {
+    public void rejectRoom(Long roomId, String reason) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
-        imageRepository.findAllImagesEntityByRoomId(roomId).forEach(image -> fileService.deleteFile(image.getUrl()));
-        imageRepository.deleteAllImagesByRoomId(roomId);
-        commentRepository.deleteCommentsByRoom_id(roomId);
-        appointmentRepository.deleteAppointmentByRoom_id(roomId);
-        roomRepository.delete(room);
+        if (!"false".equals(room.getIsApproval())) {
+            throw new IllegalArgumentException("Chỉ phòng đang chờ duyệt mới có thể bị từ chối");
+        }
+        String feedback = reason == null ? "" : reason.trim();
+        if (feedback.isEmpty() || feedback.length() > 500) {
+            throw new IllegalArgumentException("Lý do từ chối phải có từ 1 đến 500 ký tự");
+        }
+        room.setIsApproval("rejected");
+        room.setModerationNote(feedback);
+        roomRepository.save(room);
     }
 
     private Room ownedRoom(Long roomId, Authentication authentication) {

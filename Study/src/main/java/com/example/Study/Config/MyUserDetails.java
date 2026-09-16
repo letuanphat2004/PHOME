@@ -17,9 +17,11 @@ public class MyUserDetails implements UserDetails {
     private String username;
     private String password;
     private List<GrantedAuthority> authorities;
+    private boolean enabled;
     public MyUserDetails(User user, Role role) {
         username = user.getUsername();
         password = user.getPassword();
+        enabled = !user.isDeleted();
         if (role != null && role.getRole_name() != null) {
             authorities = Collections.singletonList(new SimpleGrantedAuthority(role.getRole_name().name()));
         }
@@ -57,6 +59,6 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }

@@ -3,6 +3,7 @@ package com.example.Study.Model.DTO;
 public record LandlordDashboardDTO(
         long approvedRooms,
         long pendingRooms,
+        long rejectedRooms,
         long pendingAppointments,
         long approvedAppointments,
         long rejectedAppointments,
