@@ -1,24 +1,26 @@
 package com.example.Study.Common;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.Getter;
-
-import java.util.stream.Stream;
-
 public enum BookingStatusEnum {
-    Confirm(1),
-    Cancel(2);
+    PENDING("false"),
+    APPROVED("true"),
+    REJECTED("rejected");
 
-    @Getter(onMethod_ = @JsonValue)
-    private final Integer value;
+    private final String databaseValue;
 
-    BookingStatusEnum(Integer value) {
-        this.value = value;
+    BookingStatusEnum(String databaseValue) {
+        this.databaseValue = databaseValue;
     }
 
-    public static BookingStatusEnum fromValue(Integer value) {
-        return Stream.of(BookingStatusEnum.values())
-                .filter(targetEnum -> targetEnum.value.equals(value))
-                .findFirst().orElse(null);
+    public String databaseValue() {
+        return databaseValue;
+    }
+
+    public static BookingStatusEnum fromFilter(String value) {
+        return switch (value == null ? "" : value.trim().toLowerCase()) {
+            case "pending", "false" -> PENDING;
+            case "approved", "true" -> APPROVED;
+            case "rejected" -> REJECTED;
+            default -> throw new IllegalArgumentException("Trạng thái lịch hẹn không hợp lệ");
+        };
     }
 }

@@ -10,6 +10,7 @@ import AppointmentsPage from "./pages/AppointmentsPage";
 import LandlordRoomsPage from "./pages/LandlordRoomsPage";
 import AdminPage from "./pages/AdminPage";
 import FavoritesPage from "./pages/FavoritesPage";
+import LandlordDashboardPage from "./pages/LandlordDashboardPage";
 import RoleRoute from "./auth/RoleRoute";
 
 export default function App() {
@@ -42,6 +43,14 @@ export default function App() {
           element={
             <RoleRoute roles={["Tenant", "Landlord"]}>
               <AppointmentsPage />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="landlord"
+          element={
+            <RoleRoute roles={["Landlord"]}>
+              <LandlordDashboardPage />
             </RoleRoute>
           }
         />

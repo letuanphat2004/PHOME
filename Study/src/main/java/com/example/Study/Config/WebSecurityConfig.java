@@ -67,7 +67,7 @@ public class WebSecurityConfig {
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                 .requestMatchers("/index.html", "/assets/**", "/uploads/**", "/favicon.ico").permitAll()
                 .requestMatchers("/", "/login", "/register", "/forgot-password", "/account",
-                                 "/appointments", "/favorites", "/my-rooms", "/admin", "/rooms/**").permitAll()
+                                 "/appointments", "/favorites", "/landlord", "/my-rooms", "/admin", "/rooms/**").permitAll()
                 .anyRequest().denyAll())
             .exceptionHandling(errors -> errors
                 .defaultAuthenticationEntryPointFor(

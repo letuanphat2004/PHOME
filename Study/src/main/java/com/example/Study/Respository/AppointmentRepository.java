@@ -17,12 +17,13 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     Page<Appointment> getAllByUsernameOrderByComeDateAsc(String username, Pageable pageable);
 
     @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.username = :username " +
-            "AND a.room_id = :roomId AND a.comeDate = :comeDate")
+            "AND a.room_id = :roomId AND a.comeDate = :comeDate AND a.isApproval <> 'rejected'")
     boolean existsSameBooking(@Param("username") String username, @Param("roomId") long roomId,
                               @Param("comeDate") Date comeDate);
 
     @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.username = :username " +
-            "AND a.room_id = :roomId AND a.comeDate = :comeDate AND a.id <> :appointmentId")
+            "AND a.room_id = :roomId AND a.comeDate = :comeDate AND a.id <> :appointmentId " +
+            "AND a.isApproval <> 'rejected'")
     boolean existsOtherSameBooking(@Param("username") String username, @Param("roomId") long roomId,
                                    @Param("comeDate") Date comeDate,
                                    @Param("appointmentId") long appointmentId);
@@ -42,6 +43,20 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             "SET a.isApproval = 'true' " +
             "WHERE a.id = :appointmentId")
     void updateAppointmentStatus(@Param("appointmentId") long appointmentId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Appointment a SET a.isApproval = 'rejected' WHERE a.id = :appointmentId")
+    void rejectAppointment(@Param("appointmentId") long appointmentId);
+
+    @Query("SELECT COUNT(a) FROM Appointment a JOIN Room r ON r.id = a.room_id " +
+            "JOIN User u ON u.id = r.user_id WHERE u.username = :username AND a.isApproval = :status")
+    long countByLandlordAndStatus(@Param("username") String username, @Param("status") String status);
+
+    @Query("SELECT COUNT(a) FROM Appointment a JOIN Room r ON r.id = a.room_id " +
+            "JOIN User u ON u.id = r.user_id WHERE u.username = :username " +
+            "AND a.isApproval = 'true' AND a.comeDate >= :today")
+    long countUpcomingApprovedByLandlord(@Param("username") String username, @Param("today") Date today);
 
     @Modifying
     @Transactional

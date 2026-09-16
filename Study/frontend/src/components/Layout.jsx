@@ -1,4 +1,4 @@
-import { Building2, CalendarDays, Heart, LayoutDashboard, LogOut, Menu, UserRound, X } from "lucide-react";
+import { Building2, CalendarDays, Heart, House, LayoutDashboard, LogOut, Menu, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
@@ -35,7 +35,8 @@ export default function Layout() {
           {user ? (
             <>
               {user.role === "Landlord" && <>
-                <NavLink to="/my-rooms"><LayoutDashboard size={17} /> Phòng của tôi</NavLink>
+                <NavLink to="/landlord"><LayoutDashboard size={17} /> Tổng quan</NavLink>
+                <NavLink to="/my-rooms"><House size={17} /> Phòng của tôi</NavLink>
                 <NavLink to="/appointments"><CalendarDays size={17} /> Lịch hẹn</NavLink>
               </>}
               {user.role === "Tenant" && <>

@@ -22,5 +22,7 @@ public interface AppointmentService {
 
     void permitAppointment(long appointmentId, String landlordUsername);
 
+    void rejectAppointment(long appointmentId, String landlordUsername);
+
     UpdateScheduleResponse updateAppointment (UpdateScheduleRequest request, String username);
 }

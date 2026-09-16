@@ -3,7 +3,7 @@ import { useAuth } from "./AuthContext";
 
 export function landingPageFor(role) {
   if (role === "Admin") return "/admin";
-  if (role === "Landlord") return "/my-rooms";
+  if (role === "Landlord") return "/landlord";
   return "/";
 }
 

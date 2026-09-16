@@ -1,5 +1,6 @@
 package com.example.Study.Service.Impl;
 
+import com.example.Study.Common.BookingStatusEnum;
 import com.example.Study.Model.Request.AppointmentRequest;
 import com.example.Study.Model.Request.Schedule.UpdateScheduleRequest;
 import com.example.Study.Model.Respone.AppointmentResponse;
@@ -57,7 +58,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .numPeople(request.getNumPeople())
                 .comeDate(comeDate)
                 .transportation(request.getTransportation())
-                .isApproval("false")
+                .isApproval(BookingStatusEnum.PENDING.databaseValue())
                 .build();
         appointment = appointmentRepository.save(appointment);
         return new AppointmentResponse(appointment.getId());
@@ -78,17 +79,24 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Page<Appointment> getAppointmentsByUsername(String isApproval, String username, Pageable pageable) {
-        if (!"true".equals(isApproval) && !"false".equals(isApproval)) {
-            throw new IllegalArgumentException("Trạng thái lịch hẹn không hợp lệ");
-        }
-        return appointmentRepository.getAppointmentsByUsername(isApproval, username, pageable);
+        String status = BookingStatusEnum.fromFilter(isApproval).databaseValue();
+        return appointmentRepository.getAppointmentsByUsername(status, username, pageable);
     }
 
     @Override
     @Transactional
     public void permitAppointment(long appointmentId, String landlordUsername) {
-        landlordAppointment(appointmentId, landlordUsername);
+        Appointment appointment = landlordAppointment(appointmentId, landlordUsername);
+        requirePending(appointment);
         appointmentRepository.updateAppointmentStatus(appointmentId);
+    }
+
+    @Override
+    @Transactional
+    public void rejectAppointment(long appointmentId, String landlordUsername) {
+        Appointment appointment = landlordAppointment(appointmentId, landlordUsername);
+        requirePending(appointment);
+        appointmentRepository.rejectAppointment(appointmentId);
     }
 
     @Override
@@ -96,8 +104,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     public UpdateScheduleResponse updateAppointment(UpdateScheduleRequest request, String username) {
         long appointmentId = Long.parseLong(request.getAppointmentId());
         Appointment appointment = tenantAppointment(appointmentId, username);
-        if ("true".equals(appointment.getIsApproval())) {
-            throw new IllegalArgumentException("Lịch hẹn đã duyệt không thể đổi ngày");
+        if (!BookingStatusEnum.PENDING.databaseValue().equals(appointment.getIsApproval())) {
+            throw new IllegalArgumentException("Chỉ lịch hẹn đang chờ xác nhận mới có thể đổi ngày");
         }
         Date comeDate = validFutureDate(request.getComeDate());
         if (appointmentRepository.existsOtherSameBooking(username, appointment.getRoom_id(), comeDate, appointmentId)) {
@@ -127,6 +135,12 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new AccessDeniedException("Lịch hẹn này không thuộc phòng của bạn");
         }
         return appointment;
+    }
+
+    private void requirePending(Appointment appointment) {
+        if (!BookingStatusEnum.PENDING.databaseValue().equals(appointment.getIsApproval())) {
+            throw new IllegalArgumentException("Yêu cầu xem phòng này đã được xử lý");
+        }
     }
 
     private long parseRoomId(String value) {

@@ -94,7 +94,8 @@ Không sửa migration đã chạy trên database dùng chung.
 - `/api/v1/rooms`: tìm kiếm, chi tiết phòng và bình luận
 - `/api/v1/favorites`: lưu và quản lý phòng yêu thích của người thuê
 - `/api/v1/appointments`: đặt và quản lý lịch xem phòng
-- `/api/v1/landlord/rooms`: quản lý phòng của chủ nhà
+- `/api/v1/landlord/dashboard`: số liệu tổng quan dành cho chủ nhà
+- `/api/v1/landlord/rooms`: đăng, chỉnh sửa và quản lý phòng của chủ nhà
 - `/api/v1/admin`: quản lý phòng và người dùng
 
 ## Kiểm tra

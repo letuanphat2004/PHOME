@@ -15,6 +15,10 @@ import java.util.List;
 public interface RoomRepository extends JpaRepository<Room, Long> {
     Page<Room> findAllByIsApproval(String isApproval, Pageable pageable);
 
+    @Query("SELECT COUNT(r) FROM Room r WHERE r.user_id = :userId AND r.isApproval = :isApproval")
+    long countByUserIdAndIsApproval(@Param("userId") long userId,
+                                    @Param("isApproval") String isApproval);
+
     //    @Modifying -- Có cái này để DB biết file này để update|delete (Kh có mặc định là đọc)
     @Query("SELECT r FROM Room AS r WHERE " +
             "(r.isApproval = 'true')" +

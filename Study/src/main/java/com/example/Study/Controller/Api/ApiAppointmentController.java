@@ -63,9 +63,9 @@ public class ApiAppointmentController {
 
     @GetMapping("/received")
     @PreAuthorize("hasAuthority('Landlord')")
-    public List<AppointmentDTO> received(@RequestParam(defaultValue = "false") String approved,
+    public List<AppointmentDTO> received(@RequestParam(defaultValue = "pending") String status,
                                          Authentication authentication) {
-        return appointments.getAppointmentsByUsername(approved, authentication.getName(), PageRequest.of(0, 100))
+        return appointments.getAppointmentsByUsername(status, authentication.getName(), PageRequest.of(0, 100))
                 .getContent().stream().map(this::withRoom).toList();
     }
 
@@ -74,6 +74,13 @@ public class ApiAppointmentController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void approve(@PathVariable long id, Authentication authentication) {
         appointments.permitAppointment(id, authentication.getName());
+    }
+
+    @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasAuthority('Landlord')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reject(@PathVariable long id, Authentication authentication) {
+        appointments.rejectAppointment(id, authentication.getName());
     }
 
     private AppointmentDTO withRoom(com.example.Study.entity.Appointment appointment) {

@@ -1,34 +1,53 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, CalendarDays, Check, MapPin, RefreshCw, Trash2, X } from "lucide-react";
+import { Ban, CalendarClock, CalendarDays, Check, MapPin, RefreshCw, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { api, errorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 
+const statusMeta = {
+  false: { key: "pending", label: "Chờ xác nhận", className: "status" },
+  true: { key: "approved", label: "Đã xác nhận", className: "status approved" },
+  rejected: { key: "rejected", label: "Đã từ chối", className: "status rejected" },
+};
+
 export default function AppointmentsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const landlord = user?.role === "Landlord";
-  const [approved, setApproved] = useState("false");
+  const [landlordStatus, setLandlordStatus] = useState("pending");
   const [tenantFilter, setTenantFilter] = useState("all");
   const [editing, setEditing] = useState(null);
   const [newDate, setNewDate] = useState("");
   const [notice, setNotice] = useState(null);
+
   const query = useQuery({
-    queryKey: ["appointments", landlord ? "received" : "mine", landlord ? approved : "all"],
-    queryFn: () => api.get(landlord ? "/appointments/received" : "/appointments", landlord ? { params: { approved } } : undefined).then((response) => response.data),
+    queryKey: ["appointments", landlord ? "received" : "mine", landlord ? landlordStatus : "all"],
+    queryFn: () => api.get(
+      landlord ? "/appointments/received" : "/appointments",
+      landlord ? { params: { status: landlordStatus } } : undefined,
+    ).then((response) => response.data),
     enabled: Boolean(user) && user.role !== "Admin",
   });
+
   const action = useMutation({
     mutationFn: ({ id, type, comeDate }) => {
       if (type === "approve") return api.patch(`/appointments/${id}/approve`);
+      if (type === "reject") return api.patch(`/appointments/${id}/reject`);
       if (type === "update") return api.patch(`/appointments/${id}`, { comeDate });
       return api.delete(`/appointments/${id}`);
     },
     onSuccess: (_, variables) => {
+      const messages = {
+        approve: "Đã xác nhận lịch xem phòng.",
+        reject: "Đã từ chối yêu cầu xem phòng.",
+        update: "Đã cập nhật ngày xem phòng.",
+        delete: "Đã hủy lịch xem phòng.",
+      };
       setEditing(null);
-      setNotice({ type: "success", text: variables.type === "approve" ? "Đã duyệt lịch xem phòng." : variables.type === "update" ? "Đã cập nhật ngày xem phòng." : "Đã hủy lịch xem phòng." });
+      setNotice({ type: "success", text: messages[variables.type] });
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["landlord-dashboard"] });
     },
     onError: (error) => setNotice({ type: "error", text: errorMessage(error) }),
   });
@@ -37,9 +56,11 @@ export default function AppointmentsPage() {
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === "Admin") return <Navigate to="/admin" replace />;
 
-  const approveAppointment = (item) => {
-    if (window.confirm(`Xác nhận lịch xem phòng của ${item.fullname} vào ngày ${item.comeDate}?`)) {
-      setNotice(null); action.mutate({ id: item.id, type: "approve" });
+  const decideAppointment = (item, type) => {
+    const verb = type === "approve" ? "Xác nhận" : "Từ chối";
+    if (window.confirm(`${verb} lịch xem phòng của ${item.fullname} vào ngày ${item.comeDate}?`)) {
+      setNotice(null);
+      action.mutate({ id: item.id, type });
     }
   };
   const openDateEditor = (item) => {
@@ -49,31 +70,35 @@ export default function AppointmentsPage() {
   };
   const deleteAppointment = (item) => {
     if (window.confirm(`Hủy lịch xem phòng ngày ${item.comeDate}?`)) {
-      setNotice(null); action.mutate({ id: item.id, type: "delete" });
+      setNotice(null);
+      action.mutate({ id: item.id, type: "delete" });
     }
   };
+  const visibleAppointments = (query.data ?? []).filter((item) =>
+    landlord || tenantFilter === "all" || statusMeta[item.isApproval]?.key === tenantFilter,
+  );
 
   return <div className="dashboard-page appointments-page">
     <div className="dashboard-title">
       <span className="eyebrow">Lịch hẹn</span>
       <h1>{landlord ? "Yêu cầu xem phòng" : "Lịch xem phòng của bạn"}</h1>
-      <p>{landlord ? "Xem thông tin người thuê và xác nhận các yêu cầu xem phòng." : "Theo dõi và quản lý những buổi xem phòng đã đặt."}</p>
+      <p>{landlord ? "Xem thông tin người thuê, xác nhận hoặc từ chối từng yêu cầu." : "Theo dõi và quản lý những buổi xem phòng đã đặt."}</p>
     </div>
     {notice && <div className={`notice ${notice.type}`}>{notice.text}</div>}
     {landlord ? <div className="tabs" role="tablist" aria-label="Trạng thái lịch hẹn">
-      <button className={approved === "false" ? "active" : ""} onClick={() => { setApproved("false"); setNotice(null); }}>Chờ xác nhận</button>
-      <button className={approved === "true" ? "active" : ""} onClick={() => { setApproved("true"); setNotice(null); }}>Đã xác nhận</button>
+      {[["pending", "Chờ xác nhận"], ["approved", "Đã xác nhận"], ["rejected", "Đã từ chối"]].map(([value, label]) =>
+        <button key={value} className={landlordStatus === value ? "active" : ""} onClick={() => { setLandlordStatus(value); setNotice(null); }}>{label}</button>)}
     </div> : <div className="tabs" role="tablist" aria-label="Lọc lịch đã đặt">
-      <button className={tenantFilter === "all" ? "active" : ""} onClick={() => setTenantFilter("all")}>Tất cả</button>
-      <button className={tenantFilter === "pending" ? "active" : ""} onClick={() => setTenantFilter("pending")}>Chờ xác nhận</button>
-      <button className={tenantFilter === "approved" ? "active" : ""} onClick={() => setTenantFilter("approved")}>Đã xác nhận</button>
+      {[["all", "Tất cả"], ["pending", "Chờ xác nhận"], ["approved", "Đã xác nhận"], ["rejected", "Đã từ chối"]].map(([value, label]) =>
+        <button key={value} className={tenantFilter === value ? "active" : ""} onClick={() => setTenantFilter(value)}>{label}</button>)}
     </div>}
     {query.isLoading ? <div className="state-card">Đang tải lịch hẹn…</div> : query.isError ?
       <div className="state-card error-state"><p>{errorMessage(query.error)}</p><button className="button secondary" onClick={() => query.refetch()}><RefreshCw /> Thử lại</button></div> :
       <div className="data-list appointment-list">
-        {query.data.filter((item) => landlord || tenantFilter === "all" || (tenantFilter === "approved" ? item.isApproval === "true" : item.isApproval !== "true")).length === 0 && <div className="empty empty-card"><CalendarDays /><h2>Chưa có lịch hẹn nào</h2><p>{landlord && approved === "false" ? "Yêu cầu mới từ người thuê sẽ xuất hiện tại đây." : "Không có lịch hẹn trong trạng thái này."}</p>{!landlord && <Link className="button" to="/">Tìm phòng</Link>}</div>}
-        {query.data.filter((item) => landlord || tenantFilter === "all" || (tenantFilter === "approved" ? item.isApproval === "true" : item.isApproval !== "true")).map((item) => {
+        {visibleAppointments.length === 0 && <div className="empty empty-card"><CalendarDays /><h2>Chưa có lịch hẹn nào</h2><p>{landlord && landlordStatus === "pending" ? "Yêu cầu mới từ người thuê sẽ xuất hiện tại đây." : "Không có lịch hẹn trong trạng thái này."}</p>{!landlord && <Link className="button" to="/">Tìm phòng</Link>}</div>}
+        {visibleAppointments.map((item) => {
           const [day, month] = item.comeDate.split("/");
+          const meta = statusMeta[item.isApproval] ?? statusMeta.false;
           return <article key={item.id}>
             <div className="date-tile"><strong>{day}</strong><span>THÁNG {month}</span></div>
             <div className="data-main">
@@ -82,13 +107,14 @@ export default function AppointmentsPage() {
               <span>{item.email} · {item.tel}</span>
               <small>{item.numPeople} người · {item.transportation}</small>
             </div>
-            <span className={item.isApproval === "true" ? "status approved" : "status"}>{item.isApproval === "true" ? "Đã xác nhận" : "Chờ xác nhận"}</span>
-            {landlord && item.isApproval !== "true" ?
-              <button className="appointment-action approve" disabled={action.isPending} onClick={() => approveAppointment(item)}><Check /> Xác nhận</button> :
-              !landlord && <div className="appointment-actions">
-                {item.isApproval !== "true" && <button className="icon-action" title="Đổi ngày" disabled={action.isPending} onClick={() => openDateEditor(item)}><CalendarClock /></button>}
-                <button className="icon-action danger" title="Hủy lịch" disabled={action.isPending} onClick={() => deleteAppointment(item)}><Trash2 /></button>
-              </div>}
+            <span className={meta.className}>{meta.label}</span>
+            {landlord && item.isApproval === "false" ? <div className="landlord-decision-actions">
+              <button className="appointment-action approve" disabled={action.isPending} onClick={() => decideAppointment(item, "approve")}><Check /> Xác nhận</button>
+              <button className="appointment-action reject" disabled={action.isPending} onClick={() => decideAppointment(item, "reject")}><Ban /> Từ chối</button>
+            </div> : !landlord && <div className="appointment-actions">
+              {item.isApproval === "false" && <button className="icon-action" title="Đổi ngày" disabled={action.isPending} onClick={() => openDateEditor(item)}><CalendarClock /></button>}
+              <button className="icon-action danger" title="Hủy lịch" disabled={action.isPending} onClick={() => deleteAppointment(item)}><Trash2 /></button>
+            </div>}
           </article>;
         })}
       </div>}
