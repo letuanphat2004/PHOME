@@ -7,5 +7,6 @@ public record AdminDashboardDTO(
         long activeUsers,
         long disabledUsers,
         long tenants,
-        long landlords
+        long landlords,
+        long pendingReports
 ) {}

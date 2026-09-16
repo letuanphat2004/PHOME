@@ -552,7 +552,12 @@ footer span {
 .review-actions { display: flex; gap: 13px; margin-top: 12px; }
 .review-actions button { display: inline-flex; align-items: center; gap: 5px; padding: 0; border: 0; background: transparent; color: var(--green); font-size: 11px; font-weight: 700; cursor: pointer; }
 .review-actions button.danger { color: #9f3e2b; }
+.review-actions button.report-link { color: var(--muted); }
 .review-actions svg { width: 14px; }
+.report-room { justify-self: center; display: inline-flex; align-items: center; gap: 6px; padding: 5px; border: 0; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; }
+.report-room:hover { color: #9f3e2b; }
+.report-room svg { width: 14px; }
+.report-modal { width: min(590px, 100%); }
 .booking-card {
   background: #fff;
   padding: 25px;
@@ -1503,6 +1508,14 @@ footer span {
 .rejection-modal { width: min(590px, 100%); }
 .character-count { justify-self: end; margin-top: -8px; color: var(--muted); }
 .danger-button { background: #9f3e2b; }
+.report-admin-list { display: grid; gap: 10px; }
+.report-admin-list article { display: flex; align-items: flex-start; gap: 14px; padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.report-icon { width: 38px; height: 38px; display: grid; place-items: center; flex: none; border-radius: 50%; background: #f6ded8; color: #9f3e2b; }
+.report-icon svg { width: 17px; }
+.report-admin-list .data-main { min-width: 0; flex: 1; }
+.report-admin-list .data-main > span, .report-admin-list .data-main > small { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; }
+.report-admin-list .data-main > p { margin: 9px 0 0; font-size: 13px; line-height: 1.55; }
+.report-admin-list .report-resolution { padding: 9px 11px; border-radius: 6px; background: #f1f5e8; color: var(--green); }
 
 .notification-bell { position: relative; }
 .notification-trigger {
@@ -1623,6 +1636,9 @@ footer span {
 .notification-page-list .unread .notification-dot { background: var(--orange); }
 
 @media (max-width: 720px) {
+  .report-admin-list article { flex-wrap: wrap; }
+  .report-admin-list .data-main { width: calc(100% - 52px); flex: none; }
+  .report-admin-list .appointment-action { margin-left: auto; }
   .review-heading { align-items: stretch; flex-direction: column; }
   .rating-summary { align-self: flex-start; text-align: left; }
   .review-author { align-items: flex-start; flex-direction: column; gap: 7px; }

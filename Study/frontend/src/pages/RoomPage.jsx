@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, Pencil, Phone, Star, Trash2, Users, X } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Flag, Heart, MapPin, Maximize2, MessageCircle, Pencil, Phone, Star, Trash2, Users, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { api, errorMessage } from "../api/client";
@@ -22,6 +22,8 @@ export default function RoomPage() {
   const [reviewDraft, setReviewDraft] = useState({ rating: 5, content: "" });
   const [editingReview, setEditingReview] = useState(false);
   const [reviewPage, setReviewPage] = useState(0);
+  const [reportingTarget, setReportingTarget] = useState(null);
+  const [reportForm, setReportForm] = useState({ reason: "MISLEADING", details: "" });
 
   const details = useQuery({ queryKey: ["room", id], queryFn: () => api.get(`/rooms/${id}`).then((response) => response.data) });
   const reviews = useQuery({ queryKey: ["room-reviews", id, reviewPage], queryFn: () => api.get(`/rooms/${id}/reviews`, { params: { page: reviewPage, size: 5 } }).then((response) => response.data) });
@@ -70,6 +72,15 @@ export default function RoomPage() {
     },
     onError: (error) => setNotice({ type: "error", text: errorMessage(error) }),
   });
+  const sendReport = useMutation({
+    mutationFn: () => api.post("/reports", { ...reportForm, ...reportingTarget }),
+    onSuccess: () => {
+      setReportingTarget(null);
+      setReportForm({ reason: "MISLEADING", details: "" });
+      setNotice({ type: "success", text: "Báo cáo đã được gửi đến quản trị viên." });
+    },
+    onError: (error) => setNotice({ type: "error", text: errorMessage(error) }),
+  });
 
   if (details.isLoading) return <div className="page-state">Đang mở căn phòng…</div>;
   if (details.isError) return <div className="page-state"><h2>Không thể mở căn phòng</h2><p>{errorMessage(details.error)}</p><Link className="button" to="/">Quay lại danh sách</Link></div>;
@@ -109,7 +120,7 @@ export default function RoomPage() {
             {user?.role === "Tenant" && !reviews.data.eligible && !reviews.data.mine && <p className="review-eligibility">Bạn có thể đánh giá sau khi chủ nhà xác nhận lịch xem phòng.</p>}
             <div className="review-list">{reviews.data.content.length === 0 ? <p className="muted">Chưa có đánh giá nào cho căn phòng này.</p> : reviews.data.content.map((review) => <article key={review.id}>
               {review.avatar ? <img src={review.avatar} alt="" /> : <span className="comment-avatar">{review.author?.[0]?.toUpperCase()}</span>}
-              <div><div className="review-author"><strong>{review.author}{review.mine && <small>Đánh giá của bạn</small>}</strong><Stars value={review.rating} /></div><time>{formatReviewDate(review.updatedAt)}</time><p>{review.content}</p>{review.mine && !editingReview && <div className="review-actions"><button onClick={() => { setReviewDraft({ rating: review.rating, content: review.content }); setEditingReview(true); }}><Pencil /> Sửa</button><button className="danger" disabled={deleteReview.isPending} onClick={() => deleteReview.mutate()}><Trash2 /> Xóa</button></div>}</div>
+              <div><div className="review-author"><strong>{review.author}{review.mine && <small>Đánh giá của bạn</small>}</strong><Stars value={review.rating} /></div><time>{formatReviewDate(review.updatedAt)}</time><p>{review.content}</p><div className="review-actions">{review.mine && !editingReview && <><button onClick={() => { setReviewDraft({ rating: review.rating, content: review.content }); setEditingReview(true); }}><Pencil /> Sửa</button><button className="danger" disabled={deleteReview.isPending} onClick={() => deleteReview.mutate()}><Trash2 /> Xóa</button></>}{user && !review.mine && <button className="report-link" onClick={() => { setReportingTarget({ targetType: "REVIEW", targetId: review.id }); setNotice(null); }}><Flag /> Báo cáo</button>}</div></div>
             </article>)}</div>
             {reviews.data.totalPages > 1 && <div className="pagination"><button disabled={reviewPage === 0} onClick={() => setReviewPage((value) => value - 1)}><ChevronLeft /> Trước</button><span>Trang {reviewPage + 1}/{reviews.data.totalPages}</span><button disabled={reviewPage + 1 >= reviews.data.totalPages} onClick={() => setReviewPage((value) => value + 1)}>Sau <ChevronRight /></button></div>}
           </>}
@@ -133,6 +144,7 @@ export default function RoomPage() {
         <a href={`tel:${owner.tel}`} className="button secondary"><Phone /> {owner.tel}</a>
         {user?.role === "Tenant" ? <button onClick={openBooking} className="button"><CalendarDays /> Đặt lịch xem phòng</button> : !user ? <Link to="/login" state={{ from: location.pathname }} className="button"><CalendarDays /> Đăng nhập để đặt lịch</Link> : null}
         <small className="booking-note">Bạn chưa phải thanh toán ở bước này.</small>
+        {user && <button className="report-room" onClick={() => { setReportingTarget({ targetType: "ROOM", targetId: Number(id) }); setNotice(null); }}><Flag /> Báo cáo tin phòng</button>}
       </aside>
     </div>
 
@@ -147,6 +159,18 @@ export default function RoomPage() {
           <label>Phương tiện<select required value={booking.transportation} onChange={(event) => setBooking({ ...booking, transportation: event.target.value })}><option>Xe máy</option><option>Ô tô</option><option>Xe đạp</option><option>Phương tiện công cộng</option><option>Đi bộ</option></select></label>
           {notice?.type === "error" && <p className="form-error">{notice.text}</p>}
           <div className="modal-actions"><button type="button" className="button secondary" onClick={() => setBookingOpen(false)} disabled={book.isPending}>Hủy</button><button className="button" disabled={book.isPending}>{book.isPending ? "Đang gửi…" : "Gửi yêu cầu"}</button></div>
+        </form>
+      </section>
+    </div>}
+    {reportingTarget && <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && !sendReport.isPending && setReportingTarget(null)}>
+      <section className="modal report-modal" role="dialog" aria-modal="true" aria-labelledby="report-title">
+        <button className="modal-close" onClick={() => setReportingTarget(null)} disabled={sendReport.isPending} aria-label="Đóng"><X /></button>
+        <span className="eyebrow"><Flag /> Báo cáo vi phạm</span><h2 id="report-title">Nội dung có vấn đề gì?</h2><p className="editor-note">Báo cáo sẽ được quản trị viên xem xét và phản hồi qua trung tâm thông báo.</p>
+        <form onSubmit={(event) => { event.preventDefault(); sendReport.mutate(); }}>
+          <label>Lý do<select value={reportForm.reason} onChange={(event) => setReportForm({ ...reportForm, reason: event.target.value })}><option value="MISLEADING">Thông tin sai lệch</option><option value="SCAM">Có dấu hiệu lừa đảo</option><option value="OFFENSIVE">Nội dung không phù hợp</option><option value="DUPLICATE">Nội dung trùng lặp</option><option value="OTHER">Lý do khác</option></select></label>
+          <label>Mô tả<textarea required maxLength="1000" value={reportForm.details} onChange={(event) => setReportForm({ ...reportForm, details: event.target.value })} placeholder="Mô tả cụ thể vấn đề để quản trị viên có thể xác minh." /></label>
+          <small className="character-count">{reportForm.details.length}/1000 ký tự</small>
+          <div className="modal-actions"><button type="button" className="button secondary" onClick={() => setReportingTarget(null)} disabled={sendReport.isPending}>Hủy</button><button className="button danger-button" disabled={sendReport.isPending}>{sendReport.isPending ? "Đang gửi…" : "Gửi báo cáo"}</button></div>
         </form>
       </section>
     </div>}
